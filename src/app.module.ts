@@ -2,22 +2,14 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthUserModule } from './auth-user/auth-user.module';
+import { MongooseModule } from '@nestjs/mongoose';
+
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'nchrys',
-      password: 'puyol',
-      database: 'oginibe',
-      autoLoadEntities: true,
-      synchronize: true,
-    }),
-    // UsersModule,
-    // AuthUserModule,
+    MongooseModule.forRoot(
+      'mongodb+srv://admin:12345@nchrys.gpcjv.mongodb.net/oginibe?authSource=admin&replicaSet=atlas-8wkpir-shard-0&w=majority&readPreference=primary&retryWrites=true&ssl=true',
+    ),
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
