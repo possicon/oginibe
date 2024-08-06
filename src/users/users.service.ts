@@ -10,7 +10,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, UpdateQuery } from 'mongoose';
 import { User, UserDocument } from '../users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 // import * as bcrypt from 'bcrypt';
 import { LoginUserDto } from './dto/login-user.dto';
 @Injectable()
