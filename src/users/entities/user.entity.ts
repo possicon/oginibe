@@ -11,6 +11,9 @@ export class User {
   @Prop({ required: true })
   lastName: string;
 
+  @Prop({ default: false })
+  isAdmin: boolean;
+
   @Prop({ required: true, unique: true })
   email: string;
 

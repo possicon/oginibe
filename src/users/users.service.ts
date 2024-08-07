@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -39,6 +40,38 @@ export class UsersService {
 
     return { user, token };
   }
+  async createUser(
+    createUserDto: CreateUserDto,
+  ): Promise<{ user: any; token: string }> {
+    // Destructure email and password for readability
+    const { email, password } = createUserDto;
+
+    // Check for existing user with the provided email
+    const userExists = await this.userModel.findOne({ email });
+    if (userExists) {
+      throw new BadRequestException('Email already exists');
+    }
+
+    // Hash the password securely using bcrypt
+    const hashedPassword = await bcrypt.hash(password, 10); // Adjust cost factor as needed
+
+    // Create a new user instance with hashed password
+    const newUser = new this.userModel({
+      ...createUserDto,
+      password: hashedPassword,
+    });
+
+    // Save the new user to the database
+    try {
+      const user = await newUser.save();
+      return { user, token: this.jwtService.sign({ id: user._id }) };
+    } catch (error) {
+      // Handle potential errors during user creation (e.g., database errors)
+      console.error('Error creating user:', error);
+      throw new InternalServerErrorException('Failed to create user');
+    }
+  }
+
   async findAll(): Promise<User[]> {
     return this.userModel.find().exec();
   }

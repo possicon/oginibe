@@ -9,6 +9,8 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
+  isAdmin: boolean;
+
   @IsNotEmpty()
   @MinLength(6)
   password: string;
