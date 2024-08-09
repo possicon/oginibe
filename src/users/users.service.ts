@@ -2,7 +2,10 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ConflictException,
+  UnauthorizedException,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -11,8 +14,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, UpdateQuery } from 'mongoose';
 import { User, UserDocument } from '../users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
+
 import * as bcrypt from 'bcryptjs';
-// import * as bcrypt from 'bcrypt';
+
 import { LoginUserDto } from './dto/login-user.dto';
 @Injectable()
 export class UsersService {
@@ -40,36 +44,49 @@ export class UsersService {
 
     return { user, token };
   }
-  async createUser(
-    createUserDto: CreateUserDto,
-  ): Promise<{ user: any; token: string }> {
-    // Destructure email and password for readability
-    const { email, password } = createUserDto;
+  async createUser(createUserDto: CreateUserDto): Promise<any> {
+    const { email, password, firstName, lastName } = createUserDto;
 
-    // Check for existing user with the provided email
-    const userExists = await this.userModel.findOne({ email });
+    // Check if user already exists
+    const userExists = await this.userModel.findOne({ email }).exec();
     if (userExists) {
-      throw new BadRequestException('Email already exists');
+      throw new ConflictException('User already exists');
     }
 
-    // Hash the password securely using bcrypt
-    const hashedPassword = await bcrypt.hash(password, 10); // Adjust cost factor as needed
+    // Hash the password
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+    // const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create a new user instance with hashed password
+    // Create a new user
     const newUser = new this.userModel({
-      ...createUserDto,
+      email,
       password: hashedPassword,
+      firstName,
+      lastName,
     });
+    await newUser.save();
 
-    // Save the new user to the database
-    try {
-      const user = await newUser.save();
-      return { user, token: this.jwtService.sign({ id: user._id }) };
-    } catch (error) {
-      // Handle potential errors during user creation (e.g., database errors)
-      console.error('Error creating user:', error);
-      throw new InternalServerErrorException('Failed to create user');
-    }
+    // Create a JWT token
+    const payload = {
+      email: newUser.email,
+      sub: newUser._id,
+      isAdmin: newUser.isAdmin,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+    };
+    const token = this.jwtService.sign(payload);
+
+    return {
+      token,
+      user: {
+        email: newUser.email,
+        isAdmin: newUser.isAdmin,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        _id: newUser._id,
+      },
+    };
   }
 
   async findAll(): Promise<User[]> {
@@ -105,7 +122,12 @@ export class UsersService {
     return user;
   }
 
-  async remove(id: string): Promise<User> {
+  async remove(id: string, isUserAnAdmin: CreateUserDto): Promise<User> {
+    if (!isUserAnAdmin.isAdmin) {
+      throw new ForbiddenException(
+        'You do not have permission to delete users',
+      );
+    }
     try {
       const user = await this.userModel.findByIdAndDelete(id).exec();
       if (!user) {
@@ -133,5 +155,74 @@ export class UsersService {
     const token = this.jwtService.sign({ id: user._id });
 
     return { user, token };
+  }
+  async loginUser(loginDto: LoginUserDto): Promise<any> {
+    const { email, password } = loginDto;
+
+    // Find the user by email
+    const user = await this.userModel.findOne({ email }).exec();
+    if (!user) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Check if the password is correct
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // Create a JWT token
+    const payload = {
+      email: user.email,
+      sub: user._id,
+      isAdmin: user.isAdmin,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
+    const token = this.jwtService.sign(payload);
+
+    return {
+      token,
+      user: {
+        email: user.email,
+        isAdmin: user.isAdmin,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        _id: user._id,
+      },
+    };
+  }
+  async makeUserAdmin(currentUserId: string, userId: string): Promise<User> {
+    // Find the current user to verify if they're an admin
+    const currentUser = await this.userModel.findById(currentUserId);
+    if (!currentUser || !currentUser.isAdmin) {
+      throw new UnauthorizedException(
+        'You do not have permission to perform this action.',
+      );
+    }
+
+    // Find the user to update
+    const userToUpdate = await this.userModel.findById(userId);
+    if (!userToUpdate) {
+      throw new NotFoundException('User not found.');
+    }
+
+    // Update the user’s admin status
+    userToUpdate.isAdmin = true;
+    return userToUpdate.save();
+  }
+  async promoteToAdmin(userId: string, adminId: string): Promise<User> {
+    const admin = await this.userModel.findById(adminId);
+    if (!admin || !admin.isAdmin) {
+      throw new NotFoundException('Admin user not found or not authorized.');
+    }
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+
+    user.isAdmin = true;
+    return user.save();
   }
 }
