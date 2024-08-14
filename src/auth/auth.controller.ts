@@ -28,7 +28,7 @@ import { UserAuthGuard } from './guards/auth.guard';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('signup')
+  @Post()
   async signUp(@Body() signupData: SignupDto) {
     return this.authService.signup(signupData);
   }
