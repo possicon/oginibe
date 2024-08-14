@@ -5,10 +5,10 @@ import { OAuth2Client } from 'google-auth-library';
 import { UserAuthGuard } from './auth/guards/auth.guard';
 
 const client = new OAuth2Client(
-  // '486831201775-593v60egvfdnttpaut894c8c7goq757c.apps.googleusercontent.com',
-  // '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',
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
+  '486831201775-593v60egvfdnttpaut894c8c7goq757c.apps.googleusercontent.com',
+  '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',
+  // process.env.GOOGLE_CLIENT_ID,
+  // process.env.GOOGLE_CLIENT_SECRET,
 );
 @UseGuards(UserAuthGuard)
 @Controller()
