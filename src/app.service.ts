@@ -7,7 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 export class AppService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
   getHello(): string {
-    return 'Hello Worlds!';
+    return 'Hello World!';
   }
   async loginGoogle({
     email,
