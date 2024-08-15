@@ -7,6 +7,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import config from './config/config';
 import { User, UserSchema } from './auth/schemas/user.schema';
+import { QuestionsModule } from './questions/questions.module';
 
 @Module({
   imports: [
@@ -23,9 +24,7 @@ import { User, UserSchema } from './auth/schemas/user.schema';
       global: true,
       inject: [ConfigService],
     }),
-    MongooseModule.forRoot(
-      'mongodb+srv://admin:12345@nchrys.gpcjv.mongodb.net/oginibeApp?authSource=admin&replicaSet=atlas-8wkpir-shard-0&w=majority&readPreference=primary&retryWrites=true&ssl=true',
-    ),
+    MongooseModule.forRoot(process.env.MONGO_URI),
     // MongooseModule.forRootAsync({
     //   imports: [ConfigModule],
     //   useFactory: async (config) => ({
@@ -35,6 +34,7 @@ import { User, UserSchema } from './auth/schemas/user.schema';
     // }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     AuthModule,
+    QuestionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
