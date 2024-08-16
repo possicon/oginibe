@@ -8,19 +8,30 @@ import {
   Delete,
   UseGuards,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { UserAuthGuard } from 'src/auth/guards/auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('questions')
 export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
   // @UseGuards(UserAuthGuard)
   @Post()
-  create(@Body() createQuestionDto: CreateQuestionDto, @Req() req) {
-    return this.questionsService.create(createQuestionDto);
+  // @UseInterceptors(FileInterceptor('image'))
+  async create(
+    @Body() createQuestionDto: CreateQuestionDto,
+    // @UploadedFile() file: any,
+    @Req() req,
+  ) {
+    return this.questionsService.create(
+      createQuestionDto,
+      // file
+    );
   }
 
   @Get()
@@ -38,11 +49,11 @@ export class QuestionsController {
     @Param('id') id: string,
     @Body() updateQuestionDto: UpdateQuestionDto,
   ) {
-    return this.questionsService.update(+id, updateQuestionDto);
+    return this.questionsService.update(id, updateQuestionDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.questionsService.remove(+id);
+    return this.questionsService.remove(id);
   }
 }

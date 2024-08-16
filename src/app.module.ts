@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import config from './config/config';
 import { User, UserSchema } from './auth/schemas/user.schema';
 import { QuestionsModule } from './questions/questions.module';
+import { CategoryQuestionsModule } from './category-questions/category-questions.module';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { QuestionsModule } from './questions/questions.module';
     // }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     AuthModule,
-    QuestionsModule,
+    // QuestionsModule,
+    CategoryQuestionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

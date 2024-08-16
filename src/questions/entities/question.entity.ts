@@ -4,16 +4,22 @@ import { Document, Types } from 'mongoose';
 @Schema()
 export class Question extends Document {
   @Prop({ required: true })
-  questionTitle: string;
+  title: string;
 
   @Prop({ required: true, minlength: 6, maxlength: 100 })
   description: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'QuestionsCategory', required: true })
+  categoryId: Types.ObjectId;
+
   @Prop({ required: true })
-  category: string;
+  categoryName: string;
 
   @Prop({ required: false })
   status: string;
+
+  @Prop({ required: false })
+  imageUrl: string;
 
   @Prop({ required: false, type: [String] })
   tags: string[];

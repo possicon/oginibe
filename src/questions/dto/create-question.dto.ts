@@ -9,7 +9,7 @@ import {
 export class CreateQuestionDto {
   @IsNotEmpty()
   @IsString()
-  questionTitle: string;
+  title: string;
 
   @IsNotEmpty()
   @IsString()
@@ -21,8 +21,13 @@ export class CreateQuestionDto {
   userId: string;
 
   @IsNotEmpty()
-  category: string;
+  categoryId: string;
 
+  @IsNotEmpty()
+  categoryName: string;
+
+  @IsOptional()
+  imageUrl: string;
   @IsOptional()
   status?: string;
 
