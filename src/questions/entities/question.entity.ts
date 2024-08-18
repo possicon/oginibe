@@ -12,10 +12,7 @@ export class Question extends Document {
   @Prop({ type: Types.ObjectId, ref: 'QuestionsCategory', required: true })
   categoryId: Types.ObjectId;
 
-  @Prop({ required: true })
-  categoryName: string;
-
-  @Prop({ required: false })
+  @Prop({ required: false, default: 'enable' })
   status: string;
 
   @Prop({ required: false })

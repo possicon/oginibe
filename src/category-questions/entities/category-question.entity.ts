@@ -5,8 +5,8 @@ import { Document, Types } from 'mongoose';
 export class QuestionsCategory extends Document {
   @Prop({ required: true })
   name: string;
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Question' }] })
-  questions: Types.ObjectId[]; // Array of ObjectIds referencing Question schema
+  @Prop({ required: true, minlength: 6, maxlength: 100 })
+  description: string;
 }
 
 export const QuestionsCategorySchema =

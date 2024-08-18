@@ -6,71 +6,55 @@ import { Model } from 'mongoose';
 import { Question } from './entities/question.entity';
 import { QuestionsCategory } from 'src/category-questions/entities/category-question.entity';
 import { UpdateQuery } from 'mongoose';
-import ImageKit from 'imagekit';
+import { ImageKitService } from './services/imagekit';
+
 @Injectable()
 export class QuestionsService {
   constructor(
     @InjectModel(Question.name) private QuestionModel: Model<Question>,
-    // @InjectModel(QuestionsCategory.name)
-    // private QuestionsCategoryModel: Model<QuestionsCategory>,
-    private imagekit: ImageKit,
-  ) {
-    // this.imagekit = new ImageKit({
-    //   publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
-    //   privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
-    //   urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
-    // });
-  }
-  async create(
-    createQuestionDto: CreateQuestionDto,
-    // file: any
-  ) {
-    const {
-      title,
-      description,
-      categoryName,
-      userId,
-      status,
-      categoryId,
-      imageUrl,
-      tags,
-    } = createQuestionDto;
-    const modifyQuestion = title.replace(/\s+/g, '-');
-    const modifyCategory = categoryName.replace(/\s+/g, '-');
-    // const resultUrl = await this.imagekit.upload({
-    //   file: file.buffer, // Assuming the file is passed as a buffer
-    //   fileName: `${title}-${title}.jpg`, // Using userId and title to generate the file name
-    // });
+    private readonly imageKitService: ImageKitService,
+  ) {}
 
-    const newQuestion = new this.QuestionModel({
-      title: modifyQuestion,
-      description,
-      status,
-      categoryId,
-      imageUrl,
-      categoryName: modifyCategory,
-      tags,
-      userId,
-    });
-    const result = await newQuestion.save();
-    // await this.QuestionsCategoryModel.findByIdAndUpdate(
-    //   result.categoryId,
-    //   { $push: { questions: result._id } },
-    //   { new: true, useFindAndModify: false },
-    // );
-    return {
-      id: result._id,
-      title: result.title,
-      description: result.description,
-      status: result.status,
-      categoryName: result.categoryName,
-      categoryId: result.categoryId,
-      imageUrl: result.imageUrl,
-      tags: result.tags,
-      userId: result.userId,
-    };
-  }
+  // async create(createQuestionDto: CreateQuestionDto, file: any) {
+  //   const {
+  //     title,
+  //     description,
+  //     imageUrl,
+  //     userId,
+  //     status,
+  //     categoryId,
 
+  //     tags,
+  //   } = createQuestionDto;
+  //   const modifyQuestion = title.replace(/\s+/g, '-');
+
+  //   const newQuestion = new this.QuestionModel({
+  //     title: modifyQuestion,
+  //     description,
+  //     status,
+  //     categoryId,
+  //     imageUrl,
+  //     tags,
+  //     userId,
+  //   });
+  //   const result = await newQuestion.save();
+
+  //   return {
+  //     id: result._id,
+  //     title: result.title,
+  //     description: result.description,
+  //     status: result.status,
+
+  //     categoryId: result.categoryId,
+  //     imageUrl: result.imageUrl,
+  //     tags: result.tags,
+  //     userId: result.userId,
+  //   };
+  // }
+  async create(createQuestionDto: CreateQuestionDto): Promise<Question> {
+    const createdQuestion = new this.QuestionModel(createQuestionDto);
+    return createdQuestion.save();
+  }
   async findAll(): Promise<Question[]> {
     return this.QuestionModel.find().populate('categoryId').exec();
   }

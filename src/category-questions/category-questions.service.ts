@@ -16,7 +16,7 @@ export class CategoryQuestionsService {
     private QuestionsCategoryModel: Model<QuestionsCategory>,
   ) {}
   async create(createCategoryQuestionDto: CreateCategoryQuestionDto) {
-    const { name } = createCategoryQuestionDto;
+    const { name, description } = createCategoryQuestionDto;
     const nameExits = await this.QuestionsCategoryModel.findOne({
       name,
     });
@@ -26,23 +26,23 @@ export class CategoryQuestionsService {
     const modifyName = name.replace(/\s+/g, '-');
 
     const newQuestion = new this.QuestionsCategoryModel({
+      description,
       name: modifyName,
     });
     const result = await newQuestion.save();
     return {
       id: result._id,
       name: result.name,
+      description: result.description,
     };
   }
 
   async findAll(): Promise<QuestionsCategory[]> {
-    return this.QuestionsCategoryModel.find().populate('questions').exec();
+    return this.QuestionsCategoryModel.find().exec();
   }
 
   async findOne(id: string): Promise<QuestionsCategory> {
-    const category = await this.QuestionsCategoryModel.findById(id)
-      .populate('questions')
-      .exec();
+    const category = await this.QuestionsCategoryModel.findById(id).exec();
     if (!category) {
       throw new NotFoundException('QuestionsCategory not found');
     }

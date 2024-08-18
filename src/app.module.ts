@@ -35,7 +35,7 @@ import { CategoryQuestionsModule } from './category-questions/category-questions
     // }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     AuthModule,
-    // QuestionsModule,
+    QuestionsModule,
     CategoryQuestionsModule,
   ],
   controllers: [AppController],

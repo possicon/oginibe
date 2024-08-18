@@ -23,9 +23,6 @@ export class CreateQuestionDto {
   @IsNotEmpty()
   categoryId: string;
 
-  @IsNotEmpty()
-  categoryName: string;
-
   @IsOptional()
   imageUrl: string;
   @IsOptional()

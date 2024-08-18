@@ -4,10 +4,14 @@ import { QuestionsController } from './questions.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Question, QuestionSchema } from './entities/question.entity';
 import ImageKit from 'imagekit';
-// import {
-//   QuestionsCategory,
-//   QuestionsCategorySchema,
-// } from 'src/category-questions/entities/category-question.entity';
+import {
+  QuestionsCategory,
+  QuestionsCategorySchema,
+} from 'src/category-questions/entities/category-question.entity';
+import { ImageKitService } from './services/imagekit';
+
+// import { CloudinaryService } from './services/cloudinary.service';
+// import { CloudinaryConfig } from './services/cloudinary';
 
 @Module({
   imports: [
@@ -16,25 +20,19 @@ import ImageKit from 'imagekit';
         name: Question.name,
         schema: QuestionSchema,
       },
-      // {
-      //   name: QuestionsCategory.name,
-      //   schema: QuestionsCategorySchema,
-      // },
+      {
+        name: QuestionsCategory.name,
+        schema: QuestionsCategorySchema,
+      },
     ]),
   ],
   controllers: [QuestionsController],
   providers: [
     QuestionsService,
-    // {
-    //   provide: ImageKit,
-    //   useFactory: () => {
-    //     return new ImageKit({
-    //       publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
-    //       privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
-    //       urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
-    //     });
-    //   },
-    // },
+    ImageKitService,
+    // CloudinaryService,
+    // CloudinaryConfig,
+    // ImageKitService
   ],
 })
 export class QuestionsModule {}
