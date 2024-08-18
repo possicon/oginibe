@@ -13,13 +13,13 @@ export class ImageKitService {
     });
   }
 
-  async uploadImage(file: Express.Multer.File) {
-    const uploadResponse = await this.imagekit.upload({
-      file: file.buffer.toString('base64'), // required
-      fileName: file.originalname, // required
-      folder: '/questions', // optional
-    });
+  //   async uploadImage(file: Express.Multer.File) {
+  //     const uploadResponse = await this.imagekit.upload({
+  //       file: file.buffer.toString('base64'), // required
+  //       fileName: file.originalname, // required
+  //       folder: '/questions', // optional
+  //     });
 
-    return uploadResponse.url;
-  }
+  //     return uploadResponse.url;
+  //   }
 }

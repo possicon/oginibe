@@ -18,25 +18,32 @@ import { UserAuthGuard } from 'src/auth/guards/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express-serve-static-core';
 import { CloudinaryService } from './services/cloudinary.service';
-import { ImageKitService } from './services/imagekit';
+// import { ImageKitService } from './services/imagekit';
 @Controller('questions')
 export class QuestionsController {
   constructor(
-    private readonly questionsService: QuestionsService,
-    private readonly imageKitService: ImageKitService, // private readonly cloudinaryService: CloudinaryService,
+    private readonly questionsService: QuestionsService, // private readonly imageKitService: ImageKitService, // private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  @Post('upload')
+  // @Post('upload')
+  // @UseInterceptors(FileInterceptor('image'))
+  // async createQuestion(
+  //   @UploadedFile() file: Express.Multer.File,
+  //   @Body() createQuestionDto: CreateQuestionDto,
+  // ) {
+  //   if (file) {
+  //     const imageUrl = await this.imageKitService.uploadImage(file);
+  //     createQuestionDto.imageUrl = imageUrl;
+  //   }
+
+  //   return this.questionsService.create(createQuestionDto);
+  // }
+  @Post()
   @UseInterceptors(FileInterceptor('image'))
-  async createQuestion(
+  async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() createQuestionDto: CreateQuestionDto,
   ) {
-    if (file) {
-      const imageUrl = await this.imageKitService.uploadImage(file);
-      createQuestionDto.imageUrl = imageUrl;
-    }
-
     return this.questionsService.create(createQuestionDto);
   }
   @Get()
