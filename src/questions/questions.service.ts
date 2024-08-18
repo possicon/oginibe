@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -51,17 +55,52 @@ export class QuestionsService {
   //     userId: result.userId,
   //   };
   // }
-  async create(createQuestionDto: CreateQuestionDto): Promise<Question> {
+  async create(createQuestionDto: CreateQuestionDto) {
+    const {
+      title,
+      description,
+
+      userId,
+      status,
+      categoryId,
+
+      tags,
+    } = createQuestionDto;
+    const nameExits = await this.QuestionModel.findOne({
+      title,
+      userId,
+    });
+    if (nameExits) {
+      throw new BadRequestException(
+        'This particular question has been asked by this user ',
+      );
+    }
+    const modifyName = title.replace(/\s+/g, '-');
     const createdQuestion = new this.QuestionModel(createQuestionDto);
-    return createdQuestion.save();
+    const result = await createdQuestion.save();
+    return {
+      id: result._id,
+      title: result.title,
+      description: result.description,
+      status: result.status,
+
+      categoryId: result.categoryId,
+      imageUrl: result.imageUrl,
+      tags: result.tags,
+      userId: result.userId,
+    };
   }
   async findAll(): Promise<Question[]> {
-    return this.QuestionModel.find().populate('categoryId').exec();
+    return this.QuestionModel.find()
+      .populate('categoryId')
+      .populate('userId')
+      .exec();
   }
 
   async findOne(id: string): Promise<Question> {
     const question = await this.QuestionModel.findById(id)
       .populate('categoryId')
+      .populate('userId')
       .exec();
     if (!question) {
       throw new NotFoundException('Question not found');
