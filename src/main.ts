@@ -13,7 +13,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
   app.enableCors();
   await app.listen(4100);
 }
