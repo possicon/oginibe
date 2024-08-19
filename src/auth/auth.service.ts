@@ -249,4 +249,65 @@ export class AuthService {
       },
     );
   }
+  async loginGooglesy({
+    email,
+    name,
+  }: {
+    email: string;
+    name: string;
+  }): Promise<any> {
+    // const hashedPassword = await bcrypt.hash(name, 10);
+    const userExists = await this.UserModel.findOne({
+      email: email,
+    });
+    //Hash password
+
+    if (!userExists) {
+      const createdUser = new this.UserModel({
+        email,
+        name,
+        lastName: name,
+        firstName: name,
+        // password: hashedPassword,
+      });
+      await createdUser.save();
+      return createdUser;
+    } else {
+      return userExists;
+    }
+  }
+  async loginGoogle({
+    email,
+    name,
+    image,
+    firstName,
+    lastName,
+    password,
+  }: {
+    email: string;
+    name: string;
+    image: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+  }): Promise<any> {
+    const hashedPassword = await bcrypt.hash(name, 10);
+    const userExists = await this.UserModel.findOne({
+      email: email,
+    });
+    if (!userExists) {
+      const createdUser = new this.UserModel({
+        email,
+        name,
+        image,
+        firstName: name,
+        lastName: name,
+        password: hashedPassword,
+      });
+      await createdUser.save();
+      return createdUser;
+    } else {
+      return userExists;
+    }
+  }
 }

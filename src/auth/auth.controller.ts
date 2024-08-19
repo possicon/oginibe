@@ -23,7 +23,11 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 // import { AuthGuard } from '@nestjs/passport';
 import { AdminGuard } from './guards/admin.guard';
 import { UserAuthGuard } from './guards/auth.guard';
-
+import { OAuth2Client } from 'google-auth-library';
+const client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+);
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -89,5 +93,28 @@ export class AuthController {
       resetPasswordDto.resetToken,
     );
     return { message: 'New Password changed successfully' };
+  }
+  @Post('/google-login')
+  async loginGoogle(
+    @Body('token') token,
+    @Body('firstName') firstName: string,
+    @Body('lastName') lastName: string,
+    @Body('password') password: string,
+  ): Promise<any> {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const data = await this.authService.loginGoogle({
+      email: payload.email,
+      name: payload.name,
+      image: payload.picture,
+      firstName,
+      lastName,
+      password,
+    });
+    return data;
   }
 }

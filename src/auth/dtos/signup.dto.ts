@@ -1,6 +1,7 @@
 import {
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MinLength,
@@ -18,6 +19,8 @@ export class SignupDto {
 
   isAdmin: boolean;
 
+  @IsOptional()
+  name: string;
   @IsString()
   @MinLength(6)
   @Matches(/^(?=.*[0-9])/, {
