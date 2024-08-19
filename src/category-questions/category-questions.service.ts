@@ -38,7 +38,7 @@ export class CategoryQuestionsService {
   }
 
   async findAll(): Promise<QuestionsCategory[]> {
-    return this.QuestionsCategoryModel.find().exec();
+    return this.QuestionsCategoryModel.find().sort({ createdAt: -1 }).exec();
   }
 
   async findOne(id: string): Promise<QuestionsCategory> {

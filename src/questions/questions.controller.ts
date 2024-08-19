@@ -25,20 +25,11 @@ export class QuestionsController {
     private readonly questionsService: QuestionsService, // private readonly imageKitService: ImageKitService, // private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  // @Post('upload')
-  // @UseInterceptors(FileInterceptor('image'))
-  // async createQuestion(
-  //   @UploadedFile() file: Express.Multer.File,
-  //   @Body() createQuestionDto: CreateQuestionDto,
-  // ) {
-  //   if (file) {
-  //     const imageUrl = await this.imageKitService.uploadImage(file);
-  //     createQuestionDto.imageUrl = imageUrl;
-  //   }
-
-  //   return this.questionsService.create(createQuestionDto);
-  // }
   @Post()
+  async createQuestion(@Body() createQuestionDto: CreateQuestionDto) {
+    return this.questionsService.createQuestion(createQuestionDto);
+  }
+  @Post('upload')
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @UploadedFile() file: Express.Multer.File,

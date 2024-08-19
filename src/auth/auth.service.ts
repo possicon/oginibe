@@ -105,7 +105,7 @@ export class AuthService {
     };
   }
   async findAll(): Promise<User[]> {
-    return this.UserModel.find().exec();
+    return this.UserModel.find().sort({ createdAt: -1 }).exec();
   }
 
   async findOne(id: string): Promise<User> {

@@ -75,8 +75,54 @@ export class QuestionsService {
       userId: result.userId,
     };
   }
+  async createQuestion(createQuestionDto: CreateQuestionDto) {
+    const {
+      title,
+      description,
+      imageUrl,
+      userId,
+      status,
+      categoryId,
+
+      tags,
+    } = createQuestionDto;
+    const nameExits = await this.QuestionModel.findOne({
+      title,
+      userId,
+    });
+    if (nameExits) {
+      throw new BadRequestException(
+        'This particular question has been asked by this user ',
+      );
+    }
+    const modifyName = title.replace(/\s+/g, '-');
+
+    const createdQuestion = new this.QuestionModel({
+      title: modifyName,
+      description,
+      imageUrl,
+      userId,
+      status,
+      categoryId,
+
+      tags,
+    });
+    const result = await createdQuestion.save();
+    return {
+      id: result._id,
+      title: result.title,
+      description: result.description,
+      status: result.status,
+
+      categoryId: result.categoryId,
+      imageUrl: result.imageUrl,
+      tags: result.tags,
+      userId: result.userId,
+    };
+  }
   async findAll(): Promise<Question[]> {
     return this.QuestionModel.find()
+      .sort({ createdAt: -1 })
       .populate('categoryId')
       .populate('userId')
       .exec();
