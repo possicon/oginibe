@@ -9,6 +9,7 @@ import config from './config/config';
 import { User, UserSchema } from './auth/schemas/user.schema';
 import { QuestionsModule } from './questions/questions.module';
 import { CategoryQuestionsModule } from './category-questions/category-questions.module';
+import { AnswersModule } from './answers/answers.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { CategoryQuestionsModule } from './category-questions/category-questions
     AuthModule,
     QuestionsModule,
     CategoryQuestionsModule,
+    AnswersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
