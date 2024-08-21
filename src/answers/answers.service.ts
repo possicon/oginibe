@@ -1,19 +1,24 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateAnswerDto } from './dto/create-answer.dto';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Answer } from './entities/answer.entity';
 import { InjectModel } from '@nestjs/mongoose';
+import { User } from 'src/auth/schemas/user.schema';
+import { Question } from 'src/questions/entities/question.entity';
 const ImageKit = require('imagekit');
 @Injectable()
 export class AnswersService {
   private imagekit: ImageKit;
   constructor(
-    @InjectModel(Answer.name) private answerModel: Model<Answer>, // private readonly imagekit: ImageKitService, // private readonly imageKitService: ImageKitService,
+    @InjectModel(Answer.name) private answerModel: Model<Answer>,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(Question.name) private readonly questionModel: Model<Question>, // private readonly imagekit: ImageKitService, // private readonly imageKitService: ImageKitService,
   ) {
     this.imagekit = new ImageKit({
       publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
@@ -99,38 +104,75 @@ export class AnswersService {
     }
   }
 
-  async upvoteAnswer(answerId: string, userId: any): Promise<Answer> {
+  async upvoteAnswer(
+    answerId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ): Promise<Answer> {
     const answer = await this.answerModel.findById(answerId);
     if (!answer) {
       throw new NotFoundException('Answer not found');
     }
 
+    // Add user to upvotes if not already upvoted
     if (!answer.upvotes.includes(userId)) {
       answer.upvotes.push(userId);
-      answer.downvotes = answer.downvotes.filter(
-        (id) => id.toString() !== userId,
-      );
-      await answer.save();
+
+      // Remove from downvotes if previously downvoted
+      answer.downvotes = answer.downvotes.filter((id) => !id.equals(userId));
     }
 
-    return answer;
+    return answer.save();
   }
 
-  async downvoteAnswer(answerId: string, userId: any): Promise<Answer> {
+  async downvoteAnswer(
+    answerId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ): Promise<Answer> {
+    const answer = await this.answerModel.findById(answerId);
+    if (!answer) {
+      throw new NotFoundException('Answer not found');
+    }
+    // Add user to downvotes if not already downvoted
+    if (!answer.downvotes.includes(userId)) {
+      answer.downvotes.push(userId);
+
+      // Remove from upvotes if previously upvoted, ensuring `id` is not null
+      answer.upvotes = answer.upvotes.filter((id) => id && !id.equals(userId));
+    }
+
+    return answer.save();
+  }
+  async changeAnswerStatus(answerId: string, userId: string): Promise<Answer> {
     const answer = await this.answerModel.findById(answerId);
     if (!answer) {
       throw new NotFoundException('Answer not found');
     }
 
-    if (!answer.downvotes.includes(userId)) {
-      answer.downvotes.push(userId);
-      answer.upvotes = answer.upvotes.filter((id) => id.toString() !== userId);
-      await answer.save();
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
-    return answer;
-  }
+    const question = await this.questionModel.findById(answer.questionId);
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
 
+    // Check if the user is an admin or the owner of the question
+
+    if (
+      user.isAdmin ||
+      new Types.ObjectId(question.userId).equals(new Types.ObjectId(userId))
+    ) {
+      answer.status = 'Answered';
+      answer.updatedAt = new Date();
+      return await answer.save();
+    } else {
+      throw new ForbiddenException(
+        'You do not have permission to change the status of this answer',
+      );
+    }
+  }
   async acknowledgeAnswer(answerId: string, userId: any): Promise<Answer> {
     const answer = await this.answerModel.findById(answerId);
     if (!answer) {
@@ -144,8 +186,19 @@ export class AnswersService {
     return `This action returns all answers`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} answer`;
+  async findOne(id: string): Promise<Answer> {
+    const answer = await this.answerModel
+      .findById(id)
+      .populate({
+        path: 'questionId',
+        populate: [{ path: 'categoryId' }, { path: 'userId' }],
+      })
+      .populate('userId')
+      .exec();
+    if (!answer) {
+      throw new NotFoundException('Question not found');
+    }
+    return answer;
   }
 
   update(id: number, updateAnswerDto: UpdateAnswerDto) {
