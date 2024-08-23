@@ -9,6 +9,10 @@ import {
   Question,
   QuestionSchema,
 } from 'src/questions/entities/question.entity';
+import {
+  AdminUser,
+  AdminUserSchema,
+} from 'src/admin-user/entities/admin-user.entity';
 
 @Module({
   imports: [
@@ -17,7 +21,11 @@ import {
     MongooseModule.forFeature([
       { name: Question.name, schema: QuestionSchema },
     ]),
+    MongooseModule.forFeature([
+      { name: AdminUser.name, schema: AdminUserSchema },
+    ]),
   ],
+
   controllers: [AnswersController],
   providers: [AnswersService, ImageKitService],
 })

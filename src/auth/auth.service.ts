@@ -61,7 +61,7 @@ export class AuthService {
     const payload = {
       email: newUser.email,
       sub: newUser._id,
-      isAdmin: newUser.isAdmin,
+      // isAdmin: newUser.isAdmin,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
     };
@@ -71,7 +71,7 @@ export class AuthService {
       token,
       user: {
         email: newUser.email,
-        isAdmin: newUser.isAdmin,
+        // isAdmin: newUser.isAdmin,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         _id: newUser._id,
@@ -99,7 +99,7 @@ export class AuthService {
       ...tokens,
       userId: user._id,
       email: user.email,
-      isAdmin: user.isAdmin,
+      // isAdmin: user.isAdmin,
       firstName: user.firstName,
       lastName: user.lastName,
     };
@@ -121,15 +121,15 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
   }
-  async makeAdmin(userId: string): Promise<User> {
-    const user = await this.UserModel.findById(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+  // async makeAdmin(userId: string): Promise<User> {
+  //   const user = await this.UserModel.findById(userId);
+  //   if (!user) {
+  //     throw new NotFoundException('User not found');
+  //   }
 
-    user.isAdmin = true;
-    return user.save();
-  }
+  //   user.isAdmin = true;
+  //   return user.save();
+  // }
   async changePassword(userId, oldPassword: string, newPassword: string) {
     //Find the user
     const user = await this.UserModel.findById(userId);
@@ -308,6 +308,36 @@ export class AuthService {
       return createdUser;
     } else {
       return userExists;
+    }
+  }
+
+  async validateFacebookUser({
+    email,
+    facebookId,
+    firstName,
+    lastName,
+  }: {
+    email: string;
+    name: string;
+    image: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    facebookId: string;
+  }): Promise<any> {
+    const hashedPassword = await bcrypt.hash(firstName, 10);
+    const userExist = await this.UserModel.findOne({ facebookId }).exec();
+    if (!userExist) {
+      const createdUser = new this.UserModel({
+        facebookId,
+        email,
+        firstName: firstName,
+        lastName: lastName,
+        password: hashedPassword,
+      });
+      return createdUser.save();
+    } else {
+      return userExist;
     }
   }
 }

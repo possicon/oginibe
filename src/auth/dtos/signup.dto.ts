@@ -17,10 +17,13 @@ export class SignupDto {
   @IsEmail()
   email: string;
 
-  isAdmin: boolean;
+  // isAdmin: boolean;
 
   @IsOptional()
   name: string;
+
+  @IsOptional()
+  facebookId: string;
   @IsString()
   @MinLength(6)
   @Matches(/^(?=.*[0-9])/, {

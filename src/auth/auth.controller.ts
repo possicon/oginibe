@@ -24,6 +24,7 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import { AdminGuard } from './guards/admin.guard';
 import { UserAuthGuard } from './guards/auth.guard';
 import { OAuth2Client } from 'google-auth-library';
+import { AuthGuard } from '@nestjs/passport';
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -55,11 +56,11 @@ export class AuthController {
   async remove(@Param('id') id: string) {
     return this.authService.remove(id);
   }
-  @Patch(':id/make-admin')
-  @UseGuards(AdminGuard)
-  async makeAdmin(@Param('id') id: string) {
-    return this.authService.makeAdmin(id);
-  }
+  // @Patch(':id/make-admin')
+  // @UseGuards(AdminGuard)
+  // async makeAdmin(@Param('id') id: string) {
+  //   return this.authService.makeAdmin(id);
+  // }
   @Post('refresh')
   async refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshTokens(refreshTokenDto.refreshToken);
@@ -116,5 +117,17 @@ export class AuthController {
       password,
     });
     return data;
+  }
+  @Get('facebook')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLogin(): Promise<void> {
+    // Initiates the Facebook OAuth2 login flow
+  }
+
+  @Get('facebook/callback')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLoginCallback(@Req() req): Promise<any> {
+    // Facebook will redirect here after a successful login
+    return req.user;
   }
 }

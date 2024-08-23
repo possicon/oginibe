@@ -10,6 +10,7 @@ import { User, UserSchema } from './auth/schemas/user.schema';
 import { QuestionsModule } from './questions/questions.module';
 import { CategoryQuestionsModule } from './category-questions/category-questions.module';
 import { AnswersModule } from './answers/answers.module';
+import { AdminUserModule } from './admin-user/admin-user.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AnswersModule } from './answers/answers.module';
     QuestionsModule,
     CategoryQuestionsModule,
     AnswersModule,
+    AdminUserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

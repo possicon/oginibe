@@ -18,6 +18,7 @@ import { UserAuthGuard } from 'src/auth/guards/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express-serve-static-core';
 import { CloudinaryService } from './services/cloudinary.service';
+import { Types } from 'mongoose';
 // import { ImageKitService } from './services/imagekit';
 @Controller('questions')
 export class QuestionsController {
@@ -58,5 +59,20 @@ export class QuestionsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.questionsService.remove(id);
+  }
+
+  @UseGuards(UserAuthGuard)
+  @Patch(':id/status')
+  async updateQuestionStatus(
+    @Param('id') questionId: string,
+    @Req() req,
+    @Body('status') status: string,
+  ) {
+    const userId = req.userId;
+    return this.questionsService.changeQuestionStatus(
+      new Types.ObjectId(questionId),
+      userId,
+      status,
+    );
   }
 }

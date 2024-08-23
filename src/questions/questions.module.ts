@@ -9,6 +9,10 @@ import {
   QuestionsCategorySchema,
 } from 'src/category-questions/entities/category-question.entity';
 import { ImageKitService } from './services/imagekit';
+import {
+  AdminUser,
+  AdminUserSchema,
+} from 'src/admin-user/entities/admin-user.entity';
 
 // import { CloudinaryService } from './services/cloudinary.service';
 // import { CloudinaryConfig } from './services/cloudinary';
@@ -24,6 +28,9 @@ import { ImageKitService } from './services/imagekit';
         name: QuestionsCategory.name,
         schema: QuestionsCategorySchema,
       },
+    ]),
+    MongooseModule.forFeature([
+      { name: AdminUser.name, schema: AdminUserSchema },
     ]),
   ],
   controllers: [QuestionsController],

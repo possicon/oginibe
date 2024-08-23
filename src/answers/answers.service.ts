@@ -11,6 +11,7 @@ import { Answer } from './entities/answer.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/auth/schemas/user.schema';
 import { Question } from 'src/questions/entities/question.entity';
+import { AdminUser } from 'src/admin-user/entities/admin-user.entity';
 const ImageKit = require('imagekit');
 @Injectable()
 export class AnswersService {
@@ -18,6 +19,8 @@ export class AnswersService {
   constructor(
     @InjectModel(Answer.name) private answerModel: Model<Answer>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(AdminUser.name)
+    private readonly AdminUserModel: Model<AdminUser>,
     @InjectModel(Question.name) private readonly questionModel: Model<Question>, // private readonly imagekit: ImageKitService, // private readonly imageKitService: ImageKitService,
   ) {
     this.imagekit = new ImageKit({
@@ -157,11 +160,11 @@ export class AnswersService {
     if (!question) {
       throw new NotFoundException('Question not found');
     }
-
+    const adminUser = await this.AdminUserModel.findOne({ userId });
     // Check if the user is an admin or the owner of the question
 
     if (
-      user.isAdmin ||
+      adminUser ||
       new Types.ObjectId(question.userId).equals(new Types.ObjectId(userId))
     ) {
       answer.status = 'Answered';
@@ -182,10 +185,18 @@ export class AnswersService {
     answer.acknowledgedBy = userId;
     return answer.save();
   }
-  findAll() {
-    return `This action returns all answers`;
-  }
 
+  async findAll(): Promise<Answer[]> {
+    return this.answerModel
+      .find()
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'questionId',
+        populate: [{ path: 'categoryId' }, { path: 'userId' }],
+      })
+      .populate('userId')
+      .exec();
+  }
   async findOne(id: string): Promise<Answer> {
     const answer = await this.answerModel
       .findById(id)
