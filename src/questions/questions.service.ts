@@ -32,33 +32,33 @@ export class QuestionsService {
     const {
       title,
       description,
-      imageUrl,
+
       userId,
       status,
       categoryId,
-
+      imageUrl,
       tags,
     } = createQuestionDto;
     const nameExits = await this.QuestionModel.findOne({
       title,
       userId,
     });
-    if (nameExits) {
-      throw new BadRequestException(
-        'This particular question has been asked by this user ',
-      );
-    }
+    // Ensure imageUrls is an array
+
     const modifyName = title.replace(/\s+/g, '-');
-    const img = await this.imagekit.upload({
-      file: imageUrl,
-      fileName: `${title}-${title}.jpg`,
-      // width:300,
-      // crop:"scale"
-    });
+    const imageUrls: string[] = [];
+    for (const image of imageUrl) {
+      const img = await this.imagekit.upload({
+        file: image,
+        fileName: `${title}-${new Date().getTime()}.jpg`,
+      });
+      imageUrls.push(img.url);
+    }
+
     const createdQuestion = new this.QuestionModel({
       title: modifyName,
       description,
-      imageUrl: img.url,
+      imageUrl: imageUrls,
       userId,
       status,
       categoryId,

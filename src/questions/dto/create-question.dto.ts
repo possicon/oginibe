@@ -24,8 +24,9 @@ export class CreateQuestionDto {
   categoryId: string;
 
   @IsOptional()
-  @IsString()
-  imageUrl?: string;
+  imageUrl?: string[];
+
+  imageUrls: string[];
   @IsOptional()
   status?: string;
 

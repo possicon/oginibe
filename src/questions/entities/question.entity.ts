@@ -15,8 +15,8 @@ export class Question extends Document {
   @Prop({ required: false, default: 'enable' })
   status: string;
 
-  @Prop({ required: false })
-  imageUrl: string;
+  @Prop({ type: [String], required: false })
+  imageUrl: string[];
 
   @Prop({ required: false, type: [String] })
   tags: string[];
