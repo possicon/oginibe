@@ -46,17 +46,24 @@ export class AnswersService {
         'This user has already given an answer to this particular question',
       );
     }
-
-    const img = await this.imagekit.upload({
-      file: imageUrl,
-      fileName: `${text}-${text}.jpg`,
-      // width:300,
-      // crop:"scale"
-    });
+    const imageUrls: string[] = [];
+    for (const image of imageUrl) {
+      const img = await this.imagekit.upload({
+        file: image,
+        fileName: `${text}-${new Date().getTime()}.jpg`,
+      });
+      imageUrls.push(img.url);
+    }
+    // const img = await this.imagekit.upload({
+    //   file: imageUrl,
+    //   fileName: `${text}-${text}.jpg`,
+    //   // width:300,
+    //   // crop:"scale"
+    // });
     const createdAnswer = new this.answerModel({
       text,
       userId,
-      imageUrl: img.url,
+      imageUrl: imageUrls,
 
       questionId,
     });

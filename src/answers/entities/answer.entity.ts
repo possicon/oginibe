@@ -14,8 +14,8 @@ export class Answer extends Document {
   @Prop({ required: false, default: 'Not answered' })
   status: string;
 
-  @Prop({ required: false })
-  imageUrl: string;
+  @Prop({ type: [String], required: false })
+  imageUrl: string[];
 
   @Prop([{ type: Types.ObjectId, ref: 'User' }])
   upvotes: Types.ObjectId[];

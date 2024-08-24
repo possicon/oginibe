@@ -43,6 +43,11 @@ export class QuestionsService {
       title,
       userId,
     });
+    if (nameExits) {
+      throw new BadRequestException(
+        'This particular question has been asked by this user ',
+      );
+    }
     // Ensure imageUrls is an array
 
     const modifyName = title.replace(/\s+/g, '-');

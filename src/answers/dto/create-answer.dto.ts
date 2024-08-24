@@ -19,6 +19,8 @@ export class CreateAnswerDto {
   @IsString()
   imageUrl?: string;
 
+  imageUrls: string[];
+
   upvotes: string[];
 
   downvotes: string[];
