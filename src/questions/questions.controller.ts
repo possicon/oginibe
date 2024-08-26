@@ -19,6 +19,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express-serve-static-core';
 import { CloudinaryService } from './services/cloudinary.service';
 import { Types } from 'mongoose';
+import { Question } from './entities/question.entity';
 // import { ImageKitService } from './services/imagekit';
 @Controller('questions')
 export class QuestionsController {
@@ -46,6 +47,11 @@ export class QuestionsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.questionsService.findOne(id);
+  }
+
+  @Get('title/:title')
+  async findByTitle(@Param('title') title: string): Promise<Question> {
+    return this.questionsService.findByTitle(title);
   }
 
   @Patch(':id')

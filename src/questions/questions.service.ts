@@ -146,6 +146,17 @@ export class QuestionsService {
     }
     return question;
   }
+  async findByTitle(title: string): Promise<Question> {
+    const question = await this.QuestionModel.findOne({ title: title })
+      .populate('categoryId')
+      .populate('userId')
+      .exec();
+
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+    return question;
+  }
 
   async update(
     id: string,
