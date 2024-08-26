@@ -22,7 +22,12 @@ export class AdminUserController {
   constructor(private readonly adminUserService: AdminUserService) {}
   @UseGuards(UserAuthGuard)
   @Post(':userId/make-admin')
-  async makeUserAdmin(@Param('userId') userId: string, @Req() req) {
+  async makeUserAdmin(
+    @Param('userId') userId: string,
+    isAdmin: boolean,
+
+    @Req() req,
+  ) {
     const userAuth = req.userId;
     if (!userAuth) {
       throw new UnauthorizedException(
@@ -30,12 +35,12 @@ export class AdminUserController {
       );
     }
     const objectId = new Types.ObjectId(userId);
-    return this.adminUserService.makeUserAdmin(objectId);
+    return this.adminUserService.makeUserAdmin(objectId, isAdmin);
   }
   @Post(':userId/Admin')
   async makeFirstAdminUser(@Param('userId') userId: string) {
     const objectId = new Types.ObjectId(userId);
-    return this.adminUserService.makeUserAdmin(objectId);
+    return this.adminUserService.makeFirstAdminUser(objectId);
   }
   @Get()
   findAll() {

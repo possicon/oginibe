@@ -28,7 +28,7 @@ export class AdminUserService {
       userId: userId,
       isAdmin: true,
     });
-  
+
     return adminUser.save();
   }
   async findAll(): Promise<AdminUser[]> {
@@ -83,16 +83,21 @@ export class AdminUserService {
       throw new NotFoundException('Admin User not found');
     }
   }
-  async makeUserAdmin(userId: Types.ObjectId): Promise<AdminUser> {
+  async makeUserAdmin(
+    userId: Types.ObjectId,
+
+    isAdmin: boolean,
+  ): Promise<AdminUser> {
     const userAlreadyAdmin = await this.AdminUserModel.findOne({
       userId,
     });
+
     if (userAlreadyAdmin) {
       throw new BadRequestException('This User is already an admin ');
     }
     const adminUser = new this.AdminUserModel({
       userId: userId,
-      isAdmin: true,
+      isAdmin,
     });
 
     return adminUser.save();
