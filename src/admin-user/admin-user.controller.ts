@@ -32,7 +32,11 @@ export class AdminUserController {
     const objectId = new Types.ObjectId(userId);
     return this.adminUserService.makeUserAdmin(objectId);
   }
-
+  @Post(':userId/Admin')
+  async makeFirstAdminUser(@Param('userId') userId: string) {
+    const objectId = new Types.ObjectId(userId);
+    return this.adminUserService.makeUserAdmin(objectId);
+  }
   @Get()
   findAll() {
     return this.adminUserService.findAll();
@@ -58,7 +62,8 @@ export class AdminUserController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.adminUserService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.adminUserService.remove(id);
+    return { message: 'Admin User has been removed' };
   }
 }

@@ -17,6 +17,20 @@ export class AdminUserService {
     private readonly AdminUserModel: Model<AdminUser>,
   ) {}
 
+  async makeFirstAdminUser(userId: Types.ObjectId): Promise<AdminUser> {
+    const userAlreadyAdmin = await this.AdminUserModel.findOne({
+      userId,
+    });
+    if (userAlreadyAdmin) {
+      throw new BadRequestException('This User is already an admin ');
+    }
+    const adminUser = new this.AdminUserModel({
+      userId: userId,
+      isAdmin: true,
+    });
+  
+    return adminUser.save();
+  }
   async findAll(): Promise<AdminUser[]> {
     return this.AdminUserModel.find()
       .sort({ createdAt: -1 })
