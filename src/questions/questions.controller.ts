@@ -10,6 +10,7 @@ import {
   Req,
   UploadedFile,
   UseInterceptors,
+  NotFoundException,
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
@@ -20,6 +21,7 @@ import { Express } from 'express-serve-static-core';
 import { CloudinaryService } from './services/cloudinary.service';
 import { Types } from 'mongoose';
 import { Question } from './entities/question.entity';
+import { DeleteImageDto } from './dto/deletImage.dto';
 // import { ImageKitService } from './services/imagekit';
 @Controller('questions')
 export class QuestionsController {
@@ -48,7 +50,12 @@ export class QuestionsController {
   findOne(@Param('id') id: string) {
     return this.questionsService.findOne(id);
   }
-
+  @Get('count')
+  @UseGuards(UserAuthGuard)
+  async getTotalQuestions(): Promise<{ total: number }> {
+    const total = await this.questionsService.getTotalQuestions();
+    return { total };
+  }
   @Get('title/:title')
   async findByTitle(@Param('title') title: string): Promise<Question> {
     return this.questionsService.findByTitle(title);
@@ -80,5 +87,23 @@ export class QuestionsController {
       userId,
       status,
     );
+  }
+  @Delete(':id/image')
+  async deleteImage(
+    @Param('id') id: string,
+    @Body() deleteImageDto: DeleteImageDto,
+  ) {
+    const updatedQuestion = await this.questionsService.deleteImage(
+      id,
+      deleteImageDto,
+    );
+
+    if (!updatedQuestion) {
+      throw new NotFoundException(
+        'Question not found or image URL does not exist',
+      );
+    }
+
+    return updatedQuestion;
   }
 }

@@ -46,7 +46,12 @@ export class AuthController {
   findAll() {
     return this.authService.findAll();
   }
-
+  @Get('count')
+  @UseGuards(UserAuthGuard)
+  async getTotalUsers(): Promise<{ totalUsers: number }> {
+    const totalUsers = await this.authService.countUsers();
+    return { totalUsers };
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.authService.findOne(id);

@@ -12,6 +12,7 @@ import { Question } from './entities/question.entity';
 import { QuestionsCategory } from 'src/category-questions/entities/category-question.entity';
 import { UpdateQuery } from 'mongoose';
 import { AdminUser } from 'src/admin-user/entities/admin-user.entity';
+import { DeleteImageDto } from './dto/deletImage.dto';
 // import { ImageKitService } from './services/imagekit';
 const ImageKit = require('imagekit');
 @Injectable()
@@ -146,6 +147,9 @@ export class QuestionsService {
     }
     return question;
   }
+  async getTotalQuestions(): Promise<number> {
+    return await this.QuestionModel.countDocuments();
+  }
   async findByTitle(title: string): Promise<Question> {
     const question = await this.QuestionModel.findOne({ title: title })
       .populate('categoryId')
@@ -207,5 +211,20 @@ export class QuestionsService {
     // Update the question's status
     question.status = newStatus;
     return question.save();
+  }
+  async deleteImage(
+    questionId: string,
+    deleteImageDto: DeleteImageDto,
+  ): Promise<Question> {
+    const { imageUrl } = deleteImageDto;
+
+    const question = await this.QuestionModel.findById(questionId);
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+
+    question.imageUrl = question.imageUrl.filter((url) => url !== imageUrl);
+
+    return await question.save();
   }
 }

@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateAdminUserDto } from './dto/create-admin-user.dto';
 import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
@@ -9,6 +11,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, UpdateQuery } from 'mongoose';
 import { User } from 'src/auth/schemas/user.schema';
 import { AdminUser } from './entities/admin-user.entity';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { AssignRoleDto } from './dto/asign-roles.dto';
 
 @Injectable()
 export class AdminUserService {
@@ -32,23 +36,50 @@ export class AdminUserService {
     return adminUser.save();
   }
   async findAll(): Promise<AdminUser[]> {
-    return this.AdminUserModel.find()
+    return (
+      this.AdminUserModel.find()
+        .sort({ createdAt: -1 })
+        // .populate('userId')
+        .exec()
+    );
+  }
+  async findAllAdminUsers(): Promise<AdminUser[]> {
+    return this.AdminUserModel.find({ isAdmin: true })
       .sort({ createdAt: -1 })
       .populate('userId')
       .exec();
   }
-
   async findOne(id: string): Promise<AdminUser> {
     const category = await this.AdminUserModel.findById(id)
-      .populate('userId')
+      // .populate('userId')
       .exec();
     if (!category) {
       throw new NotFoundException('Admin User not found');
     }
     return category;
   }
+
+  async findByUserId(userId: string): Promise<AdminUser> {
+    const adminUser = await this.AdminUserModel.findOne({ userId }).exec();
+
+    if (!adminUser) {
+      throw new NotFoundException('Admin User not found');
+    }
+
+    return adminUser;
+  }
+
+  async findAdminUserByUserId(userId: string): Promise<AdminUser> {
+    const adminuser = await this.AdminUserModel.findOne({ userId })
+      .populate('userId', 'firstName lastName email')
+      .exec();
+    if (!adminuser) {
+      throw new NotFoundException('Admin User not found');
+    }
+    return adminuser;
+  }
   async findByUser(userId: string): Promise<AdminUser> {
-    const adminUser = await this.AdminUserModel.findOne({ userId })
+    const adminUser = await this.AdminUserModel.findOne({ userId: userId })
       .populate('userId')
       .exec();
     if (!adminUser) {
@@ -72,7 +103,7 @@ export class AdminUserService {
     ).exec();
 
     if (!category) {
-      throw new NotFoundException('QuestionsCategory not found');
+      throw new NotFoundException('Admin User not found');
     }
 
     return category;
@@ -82,6 +113,9 @@ export class AdminUserService {
     if (!result) {
       throw new NotFoundException('Admin User not found');
     }
+  }
+  async findAdminByUserId(userId: string): Promise<AdminUser | null> {
+    return this.AdminUserModel.findOne({ userId }).exec();
   }
   async makeUserAdmin(
     userId: Types.ObjectId,
@@ -99,6 +133,43 @@ export class AdminUserService {
       userId: userId,
       isAdmin,
     });
+
+    return adminUser.save();
+  }
+  async createNewRole(createRoleDto: CreateRoleDto): Promise<AdminUser> {
+    const { role } = createRoleDto;
+
+    // Create a new AdminUser document with the specified role
+    const newAdminUser = new this.AdminUserModel({ role });
+
+    // Save the document to the database
+    return newAdminUser.save();
+  }
+
+  async createRole(
+    createRoleDto: CreateRoleDto,
+    adminUser: AdminUser,
+  ): Promise<AdminUser> {
+    if (!adminUser.isAdmin) {
+      throw new ForbiddenException('Only admins can create roles.');
+    }
+
+    const newAdminUser = new this.AdminUserModel({ role: createRoleDto.role });
+    return newAdminUser.save();
+  }
+
+  async assignRole(assignRoleDto: AssignRoleDto): Promise<AdminUser> {
+    const { userId, role } = assignRoleDto;
+
+    // Check if the user already has a role
+    let adminUser = await this.AdminUserModel.findOne({ userId });
+    if (!adminUser) {
+      // If not, create a new entry
+      adminUser = new this.AdminUserModel({ userId, role });
+    } else {
+      // Update the existing user's role
+      adminUser.role = role;
+    }
 
     return adminUser.save();
   }

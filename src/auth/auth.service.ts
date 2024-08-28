@@ -107,7 +107,9 @@ export class AuthService {
   async findAll(): Promise<User[]> {
     return this.UserModel.find().sort({ createdAt: -1 }).exec();
   }
-
+  async countUsers(): Promise<number> {
+    return this.UserModel.countDocuments();
+  }
   async findOne(id: string): Promise<User> {
     const user = await this.UserModel.findById(id).exec();
     if (!user) {

@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   UnauthorizedException,
+  Request,
 } from '@nestjs/common';
 import { AdminUserService } from './admin-user.service';
 import { CreateAdminUserDto } from './dto/create-admin-user.dto';
@@ -16,6 +17,11 @@ import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
 import { Types } from 'mongoose';
 import { UserAuthGuard } from 'src/auth/guards/auth.guard';
 import { AdminUser } from './entities/admin-user.entity';
+import { AuthGuard } from '@nestjs/passport';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { AdminAuthGuard } from './AdminRolesAuthGuard/admin-authguard';
+import { AssignRoleDto } from './dto/asign-roles.dto';
+import { AdminGuards } from './AdminRolesAuthGuard/adminguard';
 
 @Controller('admin-user')
 export class AdminUserController {
@@ -46,16 +52,18 @@ export class AdminUserController {
   findAll() {
     return this.adminUserService.findAll();
   }
-
+  @Get('admins')
+  async getAllAdminUsers(): Promise<AdminUser[]> {
+    return this.adminUserService.findAllAdminUsers();
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.adminUserService.findOne(id);
   }
-  @Get(':userId')
-  async getAdminUserByUserId(
-    @Param('userId') userId: string,
-  ): Promise<AdminUser> {
-    return this.adminUserService.findByUser(userId);
+
+  @Get('user/:userId')
+  async findByUserId(@Param('userId') userId: string): Promise<AdminUser> {
+    return this.adminUserService.findByUserId(userId);
   }
 
   @Patch(':id')
@@ -70,5 +78,17 @@ export class AdminUserController {
   async remove(@Param('id') id: string) {
     await this.adminUserService.remove(id);
     return { message: 'Admin User has been removed' };
+  }
+
+  @Post('role')
+  @UseGuards(UserAuthGuard) // Protect the route with a JWT guard to ensure only authenticated users can create roles
+  async createNewRole(@Body() createRoleDto: CreateRoleDto) {
+    return this.adminUserService.createNewRole(createRoleDto);
+  }
+
+  @Post('assign-role')
+  @UseGuards(UserAuthGuard)
+  async assignRole(@Body() assignRoleDto: AssignRoleDto): Promise<AdminUser> {
+    return this.adminUserService.assignRole(assignRoleDto);
   }
 }

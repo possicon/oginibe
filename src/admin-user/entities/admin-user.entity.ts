@@ -6,8 +6,11 @@ export class AdminUser extends Document {
   @Prop({ default: false })
   isAdmin: boolean;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: false })
   userId: Types.ObjectId;
+
+  @Prop({ type: String, required: false })
+  role: string;
 }
 
 export const AdminUserSchema = SchemaFactory.createForClass(AdminUser);
