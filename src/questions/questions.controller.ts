@@ -11,6 +11,7 @@ import {
   UploadedFile,
   UseInterceptors,
   NotFoundException,
+  Res,
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
@@ -50,10 +51,9 @@ export class QuestionsController {
   findOne(@Param('id') id: string) {
     return this.questionsService.findOne(id);
   }
-  @Get('count')
-  @UseGuards(UserAuthGuard)
-  async getTotalQuestions(): Promise<{ total: number }> {
-    const total = await this.questionsService.getTotalQuestions();
+  @Get('counts/all')
+  async countAllQuestions(): Promise<{ total: number }> {
+    const total = await this.questionsService.countAllQuestions();
     return { total };
   }
   @Get('title/:title')

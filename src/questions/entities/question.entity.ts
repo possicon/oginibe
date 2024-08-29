@@ -18,8 +18,8 @@ export class Question extends Document {
   @Prop({ type: [String], required: false })
   imageUrl: string[];
 
-  @Prop({ required: false, type: [String] })
-  tags: string[];
+  @Prop({ required: false, type: String })
+  tags: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;

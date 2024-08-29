@@ -62,7 +62,7 @@ export class QuestionsService {
     }
 
     const createdQuestion = new this.QuestionModel({
-      title: modifyName,
+      title,
       description,
       imageUrl: imageUrls,
       userId,
@@ -107,7 +107,7 @@ export class QuestionsService {
     const modifyName = title.replace(/\s+/g, '-');
 
     const createdQuestion = new this.QuestionModel({
-      title: modifyName,
+      title,
       description,
       imageUrl,
       userId,
@@ -147,8 +147,8 @@ export class QuestionsService {
     }
     return question;
   }
-  async getTotalQuestions(): Promise<number> {
-    return await this.QuestionModel.countDocuments();
+  async countAllQuestions(): Promise<number> {
+    return this.QuestionModel.countDocuments().exec();
   }
   async findByTitle(title: string): Promise<Question> {
     const question = await this.QuestionModel.findOne({ title: title })

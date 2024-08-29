@@ -10,6 +10,7 @@ import {
   Req,
   UnauthorizedException,
   Request,
+  NotFoundException,
 } from '@nestjs/common';
 import { AdminUserService } from './admin-user.service';
 import { CreateAdminUserDto } from './dto/create-admin-user.dto';
@@ -61,11 +62,12 @@ export class AdminUserController {
     return this.adminUserService.findOne(id);
   }
 
-  @Get('user/:userId')
-  async findByUserId(@Param('userId') userId: string): Promise<AdminUser> {
-    return this.adminUserService.findByUserId(userId);
+  @Get(':userId/details')
+  async getAdminUserByUserId(
+    @Param('userId') userId: Types.ObjectId,
+  ): Promise<AdminUser> {
+    return this.adminUserService.findAdminUsersByUserId(userId);
   }
-
   @Patch(':id')
   update(
     @Param('id') id: string,

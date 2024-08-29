@@ -36,12 +36,10 @@ export class AdminUserService {
     return adminUser.save();
   }
   async findAll(): Promise<AdminUser[]> {
-    return (
-      this.AdminUserModel.find()
-        .sort({ createdAt: -1 })
-        // .populate('userId')
-        .exec()
-    );
+    return this.AdminUserModel.find()
+      .sort({ createdAt: -1 })
+      .populate('userId')
+      .exec();
   }
   async findAllAdminUsers(): Promise<AdminUser[]> {
     return this.AdminUserModel.find({ isAdmin: true })
@@ -51,7 +49,7 @@ export class AdminUserService {
   }
   async findOne(id: string): Promise<AdminUser> {
     const category = await this.AdminUserModel.findById(id)
-      // .populate('userId')
+      .populate('userId')
       .exec();
     if (!category) {
       throw new NotFoundException('Admin User not found');
@@ -114,9 +112,17 @@ export class AdminUserService {
       throw new NotFoundException('Admin User not found');
     }
   }
-  async findAdminByUserId(userId: string): Promise<AdminUser | null> {
-    return this.AdminUserModel.findOne({ userId }).exec();
+  async findAdminUsersByUserId(userId: Types.ObjectId): Promise<AdminUser> {
+    const adminUser = await this.AdminUserModel.findOne({
+      userId,
+      isAdmin: true,
+    }).exec();
+    if (!adminUser) {
+      throw new NotFoundException('Admin user not found or not an admin.');
+    }
+    return adminUser;
   }
+
   async makeUserAdmin(
     userId: Types.ObjectId,
 

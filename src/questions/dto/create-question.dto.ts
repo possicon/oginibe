@@ -31,5 +31,5 @@ export class CreateQuestionDto {
   status?: string;
 
   @IsOptional()
-  tags?: string[];
+  tags?: string;
 }
