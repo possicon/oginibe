@@ -179,4 +179,48 @@ export class AdminUserService {
 
     return adminUser.save();
   }
+  async createNewRoles(
+    adminUserId: Types.ObjectId,
+    createRoleDto: CreateRoleDto,
+  ): Promise<AdminUser> {
+    const { role } = createRoleDto;
+    // Find the admin user by ID
+    const adminUser = await this.AdminUserModel.findById(adminUserId);
+
+    // Check if the user is an admin
+    if (!adminUser || !adminUser.isAdmin) {
+      throw new ForbiddenException('You are not authorized to create a role.');
+    }
+
+    const adminRoleinUse = await this.AdminUserModel.findOne({
+      role,
+    });
+    if (adminRoleinUse) {
+      throw new BadRequestException('Role Name already in use');
+    }
+    const newAdminUser = new this.AdminUserModel({ role });
+
+    // Save the document to the database
+    return newAdminUser.save();
+  }
+  async assignUserRole(
+    userId: Types.ObjectId,
+    role: string,
+    adminId: Types.ObjectId,
+  ): Promise<AdminUser> {
+    const admin = await this.AdminUserModel.findById(adminId);
+    if (!admin || !admin.isAdmin) {
+      throw new ForbiddenException('Only admins can assign roles.');
+    }
+    let adminUser = await this.AdminUserModel.findOne({ userId });
+    if (!adminUser) {
+      // If not, create a new entry
+      adminUser = new this.AdminUserModel({ userId, role });
+    } else {
+      // Update the existing user's role
+      adminUser.role = role;
+    }
+
+    return adminUser.save();
+  }
 }

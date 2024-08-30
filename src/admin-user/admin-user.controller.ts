@@ -82,7 +82,7 @@ export class AdminUserController {
     return { message: 'Admin User has been removed' };
   }
 
-  @Post('role')
+  @Post('role-create')
   @UseGuards(UserAuthGuard) // Protect the route with a JWT guard to ensure only authenticated users can create roles
   async createNewRole(@Body() createRoleDto: CreateRoleDto) {
     return this.adminUserService.createNewRole(createRoleDto);
@@ -92,5 +92,21 @@ export class AdminUserController {
   @UseGuards(UserAuthGuard)
   async assignRole(@Body() assignRoleDto: AssignRoleDto): Promise<AdminUser> {
     return this.adminUserService.assignRole(assignRoleDto);
+  }
+  @Post(':adminUserId/role')
+  async createRole(
+    @Param('adminUserId') adminUserId: string,
+    @Body() createRoleDto: CreateRoleDto,
+  ) {
+    const adminObjectId = new Types.ObjectId(adminUserId);
+    return this.adminUserService.createNewRoles(adminObjectId, createRoleDto);
+  }
+  @Post(':adminId/assign-role')
+  async assignUserRole(
+    @Param('adminId') adminId: Types.ObjectId,
+    @Body('userId') userId: Types.ObjectId,
+    @Body('role') role: string,
+  ) {
+    return this.adminUserService.assignUserRole(userId, role, adminId);
   }
 }
