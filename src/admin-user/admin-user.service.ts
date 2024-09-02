@@ -47,6 +47,12 @@ export class AdminUserService {
       .populate('userId')
       .exec();
   }
+  async findAllAdminUsersRoles(role: string): Promise<AdminUser[]> {
+    return this.AdminUserModel.find({ role })
+      .sort({ createdAt: -1 })
+      .populate('userId')
+      .exec();
+  }
   async findOne(id: string): Promise<AdminUser> {
     const category = await this.AdminUserModel.findById(id)
       .populate('userId')

@@ -218,7 +218,9 @@ export class AnswersService {
     }
     return answer;
   }
-
+  async countAllAnswers(): Promise<number> {
+    return this.answerModel.countDocuments().exec();
+  }
   update(id: number, updateAnswerDto: UpdateAnswerDto) {
     return `This action updates a #${id} answer`;
   }

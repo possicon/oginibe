@@ -57,6 +57,10 @@ export class AdminUserController {
   async getAllAdminUsers(): Promise<AdminUser[]> {
     return this.adminUserService.findAllAdminUsers();
   }
+  @Get('admins/roles')
+  async getAllAdminUsersByRoles(role: string): Promise<AdminUser[]> {
+    return this.adminUserService.findAllAdminUsersRoles(role);
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.adminUserService.findOne(id);

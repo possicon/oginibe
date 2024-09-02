@@ -105,4 +105,9 @@ export class AnswersController {
     const userId = req.userId; // Assuming the user ID is stored in the request object after authentication
     return this.answersService.changeAnswerStatus(answerId, userId);
   }
+  @Get('counts/all')
+  async countAllQuestions(): Promise<{ total: number }> {
+    const total = await this.answersService.countAllAnswers();
+    return { total };
+  }
 }

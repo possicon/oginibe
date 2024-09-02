@@ -32,4 +32,8 @@ export class CreateQuestionDto {
 
   @IsOptional()
   tags?: string;
+
+  upvotes: string[];
+
+  downvotes: string[];
 }

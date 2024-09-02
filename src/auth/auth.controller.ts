@@ -56,11 +56,12 @@ export class AuthController {
   findOne(@Param('id') id: string) {
     return this.authService.findOne(id);
   }
-  @UseGuards(AdminGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    return this.authService.remove(id);
+    await this.authService.remove(id);
+    return { message: 'User Deleted successfully' };
   }
+
   // @Patch(':id/make-admin')
   // @UseGuards(AdminGuard)
   // async makeAdmin(@Param('id') id: string) {

@@ -75,14 +75,14 @@ export class QuestionsController {
   }
 
   @UseGuards(UserAuthGuard)
-  @Patch(':id/status')
+  @Patch(':id/statusUpdate')
   async updateQuestionStatus(
     @Param('id') questionId: string,
     @Req() req,
     @Body('status') status: string,
   ) {
     const userId = req.userId;
-    return this.questionsService.changeQuestionStatus(
+    return this.questionsService.changeQuestionsStatus(
       new Types.ObjectId(questionId),
       userId,
       status,
@@ -105,5 +105,27 @@ export class QuestionsController {
     }
 
     return updatedQuestion;
+  }
+  @Patch(':id/upvote')
+  async upvoteAnswer(@Param('id') id: string, @Body('userId') userId: string) {
+    const objectId = new Types.ObjectId(id);
+    const userObjectId = new Types.ObjectId(userId);
+    return this.questionsService.upvoteAnswer(objectId, userObjectId);
+  }
+
+  @Patch(':id/downvote')
+  async downvoteAnswer(
+    @Param('id') id: string,
+    @Body('userId') userId: string,
+  ) {
+    const objectId = new Types.ObjectId(id);
+    const userObjectId = new Types.ObjectId(userId);
+    return this.questionsService.downvoteAnswer(objectId, userObjectId);
+  }
+  @UseGuards(UserAuthGuard)
+  @Patch(':id/status')
+  async changeAnswerStatus(@Param('id') questionId: string, @Req() req) {
+    const userId = req.userId; // Assuming the user ID is stored in the request object after authentication
+    return this.questionsService.changeQuestionStatus(questionId, userId);
   }
 }

@@ -12,7 +12,7 @@ export class Question extends Document {
   @Prop({ type: Types.ObjectId, ref: 'QuestionsCategory', required: true })
   categoryId: Types.ObjectId;
 
-  @Prop({ required: false, default: 'enable' })
+  @Prop({ required: false, default: 'Enable' })
   status: string;
 
   @Prop({ type: [String], required: false })
@@ -23,6 +23,12 @@ export class Question extends Document {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
+
+  @Prop([{ type: Types.ObjectId, ref: 'User' }])
+  upvotes: Types.ObjectId[];
+
+  @Prop([{ type: Types.ObjectId, ref: 'User' }])
+  downvotes: Types.ObjectId[];
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

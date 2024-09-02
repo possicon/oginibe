@@ -123,6 +123,7 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
   }
+
   // async makeAdmin(userId: string): Promise<User> {
   //   const user = await this.UserModel.findById(userId);
   //   if (!user) {
