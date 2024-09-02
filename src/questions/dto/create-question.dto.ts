@@ -30,10 +30,9 @@ export class CreateQuestionDto {
   @IsOptional()
   status?: string;
 
+  upvotes?: string[];
+
+  downvotes?: string[];
   @IsOptional()
   tags?: string;
-
-  upvotes: string[];
-
-  downvotes: string[];
 }

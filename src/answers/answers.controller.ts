@@ -51,6 +51,7 @@ export class AnswersController {
     return { message: 'Answer has been deleted successfully' };
   }
 
+  @UseGuards(UserAuthGuard)
   @Patch(':id/upvote')
   async upvoteAnswer(@Param('id') id: string, @Body('userId') userId: string) {
     const objectId = new Types.ObjectId(id);
@@ -58,6 +59,19 @@ export class AnswersController {
     return this.answersService.upvoteAnswer(objectId, userObjectId);
   }
 
+  @Patch(':answerId/unvote')
+  @UseGuards(UserAuthGuard)
+  async unvoteAnswer(
+    @Param('answerId') answerId: string,
+    @Body('userId') userId: string,
+    // @UserId() userId: Types.ObjectId, // assuming you have a decorator to get userId from JWT
+  ) {
+    return this.answersService.unvoteAnswer(
+      new Types.ObjectId(answerId),
+      new Types.ObjectId(userId),
+    );
+  }
+  @UseGuards(UserAuthGuard)
   @Patch(':id/downvote')
   async downvoteAnswer(
     @Param('id') id: string,

@@ -228,53 +228,72 @@ export class QuestionsService {
 
     return await question.save();
   }
-  async upvoteAnswer(
-    answerId: Types.ObjectId,
+  async upvoteQuestion(
+    questionId: Types.ObjectId,
     userId: Types.ObjectId,
   ): Promise<Question> {
-    const answer = await this.QuestionModel.findById(answerId);
-    if (!answer) {
+    const question = await this.QuestionModel.findById(questionId);
+    if (!question) {
       throw new NotFoundException('Answer not found');
     }
 
     // Add user to upvotes if not already upvoted
-    if (!answer.upvotes.includes(userId)) {
-      answer.upvotes.push(userId);
+    if (!question.upvotes.includes(userId)) {
+      question.upvotes.push(userId);
 
       // Remove from downvotes if previously downvoted
-      answer.downvotes = answer.downvotes.filter((id) => !id.equals(userId));
+      question.downvotes = question.downvotes.filter(
+        (id) => !id.equals(userId),
+      );
     }
 
-    return answer.save();
+    return question.save();
   }
-
-  async downvoteAnswer(
-    answerId: Types.ObjectId,
+  async unvoteQuestion(
+    questionId: Types.ObjectId,
     userId: Types.ObjectId,
   ): Promise<Question> {
-    const answer = await this.QuestionModel.findById(answerId);
-    if (!answer) {
+    const question = await this.QuestionModel.findById(questionId);
+    if (!question) {
+      throw new NotFoundException('Answer not found');
+    }
+    // Remove user from upvotes if they have upvoted
+    if (question.upvotes.includes(userId)) {
+      question.upvotes = question.upvotes.filter((id) => !id.equals(userId));
+    }
+
+    // Save and return the updated answer
+    return question.save();
+  }
+  async downvoteQuestion(
+    questionId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ): Promise<Question> {
+    const question = await this.QuestionModel.findById(questionId);
+    if (!question) {
       throw new NotFoundException('Answer not found');
     }
     // Add user to downvotes if not already downvoted
-    if (!answer.downvotes.includes(userId)) {
-      answer.downvotes.push(userId);
+    if (!question.downvotes.includes(userId)) {
+      question.downvotes.push(userId);
 
       // Remove from upvotes if previously upvoted, ensuring `id` is not null
-      answer.upvotes = answer.upvotes.filter((id) => id && !id.equals(userId));
+      question.upvotes = question.upvotes.filter(
+        (id) => id && !id.equals(userId),
+      );
     }
 
-    return answer.save();
+    return question.save();
   }
   async changeQuestionStatus(
     questionId: string,
-    userId: string,
+    userId: Types.ObjectId,
   ): Promise<Question> {
     const question = await this.QuestionModel.findById(questionId);
     if (!question) {
       throw new NotFoundException('Question not found');
     }
-    const adminUser = await this.adminUserModel.findOne({ userId });
+    const adminUser = await this.adminUserModel.findById(userId);
     // Check if the user is an admin
 
     if (

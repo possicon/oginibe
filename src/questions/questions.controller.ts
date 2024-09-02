@@ -106,25 +106,46 @@ export class QuestionsController {
 
     return updatedQuestion;
   }
-  @Patch(':id/upvote')
-  async upvoteAnswer(@Param('id') id: string, @Body('userId') userId: string) {
-    const objectId = new Types.ObjectId(id);
-    const userObjectId = new Types.ObjectId(userId);
-    return this.questionsService.upvoteAnswer(objectId, userObjectId);
-  }
 
-  @Patch(':id/downvote')
-  async downvoteAnswer(
+  @UseGuards(UserAuthGuard)
+  @Patch(':id/upvote')
+  async upvoteQuestion(
     @Param('id') id: string,
     @Body('userId') userId: string,
   ) {
     const objectId = new Types.ObjectId(id);
     const userObjectId = new Types.ObjectId(userId);
-    return this.questionsService.downvoteAnswer(objectId, userObjectId);
+    return this.questionsService.upvoteQuestion(objectId, userObjectId);
+  }
+  @Patch(':questionId/unvote')
+  @UseGuards(UserAuthGuard)
+  async unvoteAnswer(
+    @Param('questionId') questionId: string,
+    @Body('userId') userId: string,
+    // @UserId() userId: Types.ObjectId, // assuming you have a decorator to get userId from JWT
+  ) {
+    return this.questionsService.unvoteQuestion(
+      new Types.ObjectId(questionId),
+      new Types.ObjectId(userId),
+    );
   }
   @UseGuards(UserAuthGuard)
-  @Patch(':id/status')
-  async changeAnswerStatus(@Param('id') questionId: string, @Req() req) {
+  @Patch(':id/downvote')
+  async downvoteQuestion(
+    @Param('id') id: string,
+    @Body('userId') userId: string,
+  ) {
+    const objectId = new Types.ObjectId(id);
+    const userObjectId = new Types.ObjectId(userId);
+    return this.questionsService.downvoteQuestion(objectId, userObjectId);
+  }
+  @UseGuards(UserAuthGuard)
+  @Patch(':id/:adminId/status')
+  async changeQuestionStatus(
+    @Param('id') questionId: string,
+    // @Param('adminId') adminId: Types.ObjectId,
+    @Req() req,
+  ) {
     const userId = req.userId; // Assuming the user ID is stored in the request object after authentication
     return this.questionsService.changeQuestionStatus(questionId, userId);
   }
