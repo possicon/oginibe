@@ -11,6 +11,7 @@ import {
   UnauthorizedException,
   Request,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { AdminUserService } from './admin-user.service';
 import { CreateAdminUserDto } from './dto/create-admin-user.dto';
@@ -60,6 +61,10 @@ export class AdminUserController {
   @Get('admins/roles')
   async getAllAdminUsersByRoles(role: string): Promise<AdminUser[]> {
     return this.adminUserService.findAllAdminUsersRoles(role);
+  }
+  @Get('search')
+  async searchAdmin(@Query() query: any): Promise<AdminUser[]> {
+    return this.adminUserService.searchAdmin(query);
   }
   @Get(':id')
   findOne(@Param('id') id: string) {

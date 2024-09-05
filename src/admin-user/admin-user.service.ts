@@ -8,7 +8,7 @@ import {
 import { CreateAdminUserDto } from './dto/create-admin-user.dto';
 import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types, UpdateQuery } from 'mongoose';
+import { FilterQuery, Model, Types, UpdateQuery } from 'mongoose';
 import { User } from 'src/auth/schemas/user.schema';
 import { AdminUser } from './entities/admin-user.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -228,5 +228,19 @@ export class AdminUserService {
     }
 
     return adminUser.save();
+  }
+  async searchAdmin(query: any): Promise<AdminUser[]> {
+    const filter: FilterQuery<AdminUser> = {};
+
+    if (query.isAdmin) {
+      filter.isAdmin = { $regex: query.isAdmin, $options: 'i' }; // case-insensitive search
+    }
+    if (query.role) {
+      filter.role = { $regex: query.role, $options: 'i' };
+    }
+
+    // Add more filters as needed
+
+    return this.AdminUserModel.find(filter).exec();
   }
 }

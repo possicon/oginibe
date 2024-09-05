@@ -8,7 +8,7 @@ import {
 import { SignupDto } from './dtos/signup.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
-import mongoose, { Model, UpdateQuery } from 'mongoose';
+import mongoose, { FilterQuery, Model, UpdateQuery } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -17,6 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { nanoid } from 'nanoid';
 import { ResetToken } from './schemas/reset-token.schema';
 import { MailService } from 'src/auth/services/mail.service';
+import { SearchUserDto } from './dtos/search.dto';
 
 @Injectable()
 export class AuthService {
@@ -342,5 +343,38 @@ export class AuthService {
     } else {
       return userExist;
     }
+  }
+  async search(searchUserDto: SearchUserDto): Promise<User[]> {
+    const { firstName, lastName, name, ...rest } = searchUserDto;
+    const query = { ...rest };
+
+    if (firstName) {
+      query['firstName'] = { $regex: firstName, $options: 'i' };
+    }
+    if (lastName) {
+      query['lastName'] = { $regex: lastName, $options: 'i' };
+    }
+    if (name) {
+      query['name'] = { $regex: name, $options: 'i' };
+    }
+
+    return this.UserModel.find(query).exec();
+  }
+  async searchUsers(query: any): Promise<User[]> {
+    const filter: FilterQuery<User> = {};
+
+    if (query.firstName) {
+      filter.firstName = { $regex: query.firstName, $options: 'i' }; // case-insensitive search
+    }
+    if (query.lastName) {
+      filter.lastName = { $regex: query.lastName, $options: 'i' };
+    }
+    if (query.name) {
+      filter.tags = { $regex: query.name, $options: 'i' };
+    }
+
+    // Add more filters as needed
+
+    return this.UserModel.find(filter).exec();
   }
 }

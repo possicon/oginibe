@@ -8,7 +8,7 @@ import {
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { Question } from './entities/question.entity';
 import { QuestionsCategory } from 'src/category-questions/entities/category-question.entity';
 import { UpdateQuery } from 'mongoose';
@@ -30,7 +30,7 @@ export class QuestionsService {
     });
   }
 
-  async create(createQuestionDto: CreateQuestionDto) {
+  async create(createQuestionDto: CreateQuestionDto, tags: string) {
     const {
       title,
       description,
@@ -39,7 +39,7 @@ export class QuestionsService {
       status,
       categoryId,
       imageUrl,
-      tags,
+      // tags,
     } = createQuestionDto;
     const nameExits = await this.QuestionModel.findOne({
       title,
@@ -85,7 +85,7 @@ export class QuestionsService {
       userId: result.userId,
     };
   }
-  async createQuestion(createQuestionDto: CreateQuestionDto) {
+  async createQuestion(createQuestionDto: CreateQuestionDto, tags: string) {
     const {
       title,
       description,
@@ -94,7 +94,7 @@ export class QuestionsService {
       status,
       categoryId,
 
-      tags,
+      // tags,
     } = createQuestionDto;
     const nameExits = await this.QuestionModel.findOne({
       title,
@@ -309,5 +309,22 @@ export class QuestionsService {
         'You do not have permission to change the status of this answer',
       );
     }
+  }
+  async searchQuestions(query: any): Promise<Question[]> {
+    const filter: FilterQuery<Question> = {};
+
+    if (query.title) {
+      filter.title = { $regex: query.title, $options: 'i' }; // case-insensitive search
+    }
+    if (query.description) {
+      filter.description = { $regex: query.description, $options: 'i' };
+    }
+    if (query.tags) {
+      filter.tags = { $regex: query.tags, $options: 'i' };
+    }
+
+    // Add more filters as needed
+
+    return this.QuestionModel.find(filter).exec();
   }
 }

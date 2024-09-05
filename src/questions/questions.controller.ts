@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   NotFoundException,
   Res,
+  Query,
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
@@ -31,22 +32,29 @@ export class QuestionsController {
   ) {}
 
   @Post()
-  async createQuestion(@Body() createQuestionDto: CreateQuestionDto) {
-    return this.questionsService.createQuestion(createQuestionDto);
+  async createQuestion(
+    @Body() createQuestionDto: CreateQuestionDto,
+    tags: string,
+  ) {
+    return this.questionsService.createQuestion(createQuestionDto, tags);
   }
   @Post('upload')
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() createQuestionDto: CreateQuestionDto,
+    tags: string,
   ) {
-    return this.questionsService.create(createQuestionDto);
+    return this.questionsService.create(createQuestionDto, tags);
   }
   @Get()
   findAll() {
     return this.questionsService.findAll();
   }
-
+  @Get('search')
+  async searchQuestions(@Query() query: any): Promise<Question[]> {
+    return this.questionsService.searchQuestions(query);
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.questionsService.findOne(id);

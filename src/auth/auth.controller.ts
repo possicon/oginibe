@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -25,6 +26,8 @@ import { AdminGuard } from './guards/admin.guard';
 import { UserAuthGuard } from './guards/auth.guard';
 import { OAuth2Client } from 'google-auth-library';
 import { AuthGuard } from '@nestjs/passport';
+import { SearchUserDto } from './dtos/search.dto';
+import { User } from './schemas/user.schema';
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -46,11 +49,16 @@ export class AuthController {
   findAll() {
     return this.authService.findAll();
   }
+
   @Get('count')
   @UseGuards(UserAuthGuard)
   async getTotalUsers(): Promise<{ totalUsers: number }> {
     const totalUsers = await this.authService.countUsers();
     return { totalUsers };
+  }
+  @Get('search')
+  async searchUser(@Query() query: any): Promise<User[]> {
+    return this.authService.searchUsers(query);
   }
   @Get(':id')
   findOne(@Param('id') id: string) {

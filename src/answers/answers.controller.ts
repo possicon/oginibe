@@ -18,6 +18,7 @@ import { UpdateAnswerDto } from './dto/update-answer.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Types } from 'mongoose';
 import { UserAuthGuard } from 'src/auth/guards/auth.guard';
+import { Answer } from './entities/answer.entity';
 
 @Controller('answers')
 export class AnswersController {
@@ -98,7 +99,10 @@ export class AnswersController {
   findAll() {
     return this.answersService.findAll();
   }
-
+  @Get('search')
+  async searchAnswer(@Query() query: any): Promise<Answer[]> {
+    return this.answersService.searchAnswers(query);
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.answersService.findOne(id);

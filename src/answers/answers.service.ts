@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { CreateAnswerDto } from './dto/create-answer.dto';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
-import { Model, Types } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { Answer } from './entities/answer.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/auth/schemas/user.schema';
@@ -235,6 +235,21 @@ export class AnswersService {
   }
   async countAllAnswers(): Promise<number> {
     return this.answerModel.countDocuments().exec();
+  }
+
+  async searchAnswers(query: any): Promise<Answer[]> {
+    const filter: FilterQuery<Answer> = {};
+
+    if (query.text) {
+      filter.text = { $regex: query.text, $options: 'i' }; // case-insensitive search
+    }
+    if (query.status) {
+      filter.status = { $regex: query.status, $options: 'i' };
+    }
+
+    // Add more filters as needed
+
+    return this.answerModel.find(filter).exec();
   }
   update(id: number, updateAnswerDto: UpdateAnswerDto) {
     return `This action updates a #${id} answer`;
