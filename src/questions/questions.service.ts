@@ -30,7 +30,7 @@ export class QuestionsService {
     });
   }
 
-  async create(createQuestionDto: CreateQuestionDto, tags: string) {
+  async create(createQuestionDto: CreateQuestionDto) {
     const {
       title,
       description,
@@ -39,7 +39,7 @@ export class QuestionsService {
       status,
       categoryId,
       imageUrl,
-      // tags,
+      tags,
     } = createQuestionDto;
     const nameExits = await this.QuestionModel.findOne({
       title,
@@ -69,7 +69,6 @@ export class QuestionsService {
       userId,
       status,
       categoryId,
-
       tags,
     });
     const result = await createdQuestion.save();
@@ -85,7 +84,7 @@ export class QuestionsService {
       userId: result.userId,
     };
   }
-  async createQuestion(createQuestionDto: CreateQuestionDto, tags: string) {
+  async createQuestion(createQuestionDto: CreateQuestionDto) {
     const {
       title,
       description,
@@ -94,7 +93,7 @@ export class QuestionsService {
       status,
       categoryId,
 
-      // tags,
+      tags,
     } = createQuestionDto;
     const nameExits = await this.QuestionModel.findOne({
       title,
@@ -110,7 +109,7 @@ export class QuestionsService {
     const createdQuestion = new this.QuestionModel({
       title,
       description,
-      imageUrl,
+      // imageUrl,
       userId,
       status,
       categoryId,

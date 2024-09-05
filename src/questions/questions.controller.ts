@@ -32,20 +32,16 @@ export class QuestionsController {
   ) {}
 
   @Post()
-  async createQuestion(
-    @Body() createQuestionDto: CreateQuestionDto,
-    tags: string,
-  ) {
-    return this.questionsService.createQuestion(createQuestionDto, tags);
+  async createQuestion(@Body() createQuestionDto: CreateQuestionDto) {
+    return this.questionsService.createQuestion(createQuestionDto);
   }
   @Post('upload')
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() createQuestionDto: CreateQuestionDto,
-    tags: string,
   ) {
-    return this.questionsService.create(createQuestionDto, tags);
+    return this.questionsService.create(createQuestionDto);
   }
   @Get()
   findAll() {

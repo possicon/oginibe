@@ -30,10 +30,11 @@ export class CreateQuestionDto {
   @IsOptional()
   status?: string;
 
+  @IsOptional()
+  @IsString() // Ensure it's a string
+  tags?: string;
+
   upvotes?: string[];
 
   downvotes?: string[];
-
-  // @IsOptional()
-  // tags?: string;
 }

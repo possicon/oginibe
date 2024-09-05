@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { nanoid } from 'nanoid';
 import { ResetToken } from './schemas/reset-token.schema';
 import { MailService } from 'src/auth/services/mail.service';
-import { SearchUserDto } from './dtos/search.dto';
+// import { SearchUserDto } from './dtos/search.dto';
 
 @Injectable()
 export class AuthService {
@@ -344,22 +344,7 @@ export class AuthService {
       return userExist;
     }
   }
-  async search(searchUserDto: SearchUserDto): Promise<User[]> {
-    const { firstName, lastName, name, ...rest } = searchUserDto;
-    const query = { ...rest };
 
-    if (firstName) {
-      query['firstName'] = { $regex: firstName, $options: 'i' };
-    }
-    if (lastName) {
-      query['lastName'] = { $regex: lastName, $options: 'i' };
-    }
-    if (name) {
-      query['name'] = { $regex: name, $options: 'i' };
-    }
-
-    return this.UserModel.find(query).exec();
-  }
   async searchUsers(query: any): Promise<User[]> {
     const filter: FilterQuery<User> = {};
 
@@ -370,7 +355,7 @@ export class AuthService {
       filter.lastName = { $regex: query.lastName, $options: 'i' };
     }
     if (query.name) {
-      filter.tags = { $regex: query.name, $options: 'i' };
+      filter.name = { $regex: query.name, $options: 'i' };
     }
 
     // Add more filters as needed
