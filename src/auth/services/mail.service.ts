@@ -24,7 +24,7 @@ export class MailService {
       from: 'Oginibe Auth-backend service',
       to: to,
       subject: 'Password Reset Request',
-      html: `<p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetLink}">Reset Password</a></p>`,
+      html: `<p>You requested a password reset. Click on the link below to reset your password:</p><p><a href="${resetLink}">Reset Password</a></p>`,
     };
 
     await this.transporter.sendMail(mailOptions);
