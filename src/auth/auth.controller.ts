@@ -62,7 +62,7 @@ export class AuthController {
   }
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.authService.findOne(id);
+    return this.authService.findaSingleUser(id);
   }
   @Delete(':id')
   async remove(@Param('id') id: string) {

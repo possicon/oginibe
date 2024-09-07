@@ -286,13 +286,13 @@ export class QuestionsService {
   }
   async changeQuestionStatus(
     questionId: string,
-    userId: Types.ObjectId,
+    adminId: Types.ObjectId,
   ): Promise<Question> {
     const question = await this.QuestionModel.findById(questionId);
     if (!question) {
       throw new NotFoundException('Question not found');
     }
-    const adminUser = await this.adminUserModel.findById(userId);
+    const adminUser = await this.adminUserModel.findById(adminId);
     // Check if the user is an admin
 
     if (

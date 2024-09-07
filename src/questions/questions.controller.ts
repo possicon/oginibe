@@ -147,10 +147,10 @@ export class QuestionsController {
   @Patch(':id/:adminId/status')
   async changeQuestionStatus(
     @Param('id') questionId: string,
-    // @Param('adminId') adminId: Types.ObjectId,
+    @Param('adminId') adminId: Types.ObjectId,
     @Req() req,
   ) {
     const userId = req.userId; // Assuming the user ID is stored in the request object after authentication
-    return this.questionsService.changeQuestionStatus(questionId, userId);
+    return this.questionsService.changeQuestionStatus(questionId, adminId);
   }
 }

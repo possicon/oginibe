@@ -111,7 +111,7 @@ export class AuthService {
   async countUsers(): Promise<number> {
     return this.UserModel.countDocuments();
   }
-  async findOne(id: string): Promise<User> {
+  async findaSingleUser(id: string): Promise<User> {
     const user = await this.UserModel.findById(id).exec();
     if (!user) {
       throw new NotFoundException('User not found');
