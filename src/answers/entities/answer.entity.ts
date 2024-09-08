@@ -1,5 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+
+@Schema()
+export class Comment {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: Types.ObjectId;
+
+  @Prop({ required: true })
+  commentText: string;
+
+  @Prop({ type: Date, default: Date.now })
+  createdAt: Date;
+}
 @Schema()
 export class Answer extends Document {
   @Prop({ required: true })
@@ -25,6 +37,9 @@ export class Answer extends Document {
 
   @Prop([{ type: Types.ObjectId, ref: 'User' }])
   acknowledgedBy: Types.ObjectId[];
+
+  @Prop([{ type: Comment }])
+  comments: Comment[];
 
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;

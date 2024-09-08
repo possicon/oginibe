@@ -12,6 +12,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/auth/schemas/user.schema';
 import { Question } from 'src/questions/entities/question.entity';
 import { AdminUser } from 'src/admin-user/entities/admin-user.entity';
+import { AddCommentDto } from './dto/AddComment.dto';
 const ImageKit = require('imagekit');
 @Injectable()
 export class AnswersService {
@@ -251,11 +252,51 @@ export class AnswersService {
 
     return this.answerModel.find(filter).exec();
   }
+  async changeAnswerStatusByAdmin(
+    answerId: string,
+    adminId: Types.ObjectId,
+  ): Promise<Answer> {
+    const answer = await this.answerModel.findById(answerId);
+    if (!answer) {
+      throw new NotFoundException('Question not found');
+    }
+    const adminUser = await this.AdminUserModel.findById(adminId);
+    // Check if the user is an admin
+
+    if (adminUser) {
+      answer.status = 'Answered';
+      // question.updatedAt = new Date();
+      return await answer.save();
+    } else {
+      throw new ForbiddenException(
+        'You do not have permission to change the status of this answer',
+      );
+    }
+  }
   update(id: number, updateAnswerDto: UpdateAnswerDto) {
     return `This action updates a #${id} answer`;
   }
 
   remove(id: number) {
     return `This action removes a #${id} answer`;
+  }
+  async addComment(
+    answerId: string,
+    userId: string,
+    addCommentDto: AddCommentDto,
+  ) {
+    const answer = await this.answerModel.findById(answerId);
+    if (!answer) {
+      throw new NotFoundException('Answer not found');
+    }
+
+    const newComment: any = {
+      userId,
+      commentText: addCommentDto.commentText,
+      createdAt: new Date(),
+    };
+
+    answer.comments.push(newComment);
+    return await answer.save();
   }
 }

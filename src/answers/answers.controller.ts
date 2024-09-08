@@ -19,6 +19,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Types } from 'mongoose';
 import { UserAuthGuard } from 'src/auth/guards/auth.guard';
 import { Answer } from './entities/answer.entity';
+import { AddCommentDto } from './dto/AddComment.dto';
 
 @Controller('answers')
 export class AnswersController {
@@ -127,5 +128,27 @@ export class AnswersController {
   async countAllQuestions(): Promise<{ total: number }> {
     const total = await this.answersService.countAllAnswers();
     return { total };
+  }
+
+  @UseGuards(UserAuthGuard)
+  @Patch(':id/:adminId/status')
+  async changeAnswerStatusByAdmin(
+    @Param('id') questionId: string,
+    @Param('adminId') adminId: Types.ObjectId,
+    @Req() req,
+  ) {
+    const userId = req.userId; // Assuming the user ID is stored in the request object after authentication
+    return this.answersService.changeAnswerStatusByAdmin(questionId, adminId);
+  }
+
+  @UseGuards(UserAuthGuard)
+  @Post(':id/comment')
+  async addComment(
+    @Param('id') answerId: string,
+    @Req() req,
+    @Body() addCommentDto: AddCommentDto,
+  ) {
+    const userId = req.user.userId; // Extract userId from JWT
+    return this.answersService.addComment(answerId, userId, addCommentDto);
   }
 }
