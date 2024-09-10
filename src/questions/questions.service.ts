@@ -133,14 +133,20 @@ export class QuestionsService {
     return this.QuestionModel.find()
       .sort({ createdAt: -1 })
       .populate('categoryId')
-      .populate('userId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
       .exec();
   }
 
   async findOne(id: string): Promise<Question> {
     const question = await this.QuestionModel.findById(id)
       .populate('categoryId')
-      .populate('userId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
       .exec();
     if (!question) {
       throw new NotFoundException('Question not found');
@@ -153,7 +159,10 @@ export class QuestionsService {
   async findByTitle(title: string): Promise<Question> {
     const question = await this.QuestionModel.findOne({ title: title })
       .populate('categoryId')
-      .populate('userId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
       .exec();
 
     if (!question) {

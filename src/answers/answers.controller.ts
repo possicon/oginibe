@@ -145,10 +145,8 @@ export class AnswersController {
   @Post(':id/comment')
   async addComment(
     @Param('id') answerId: string,
-    @Req() req,
     @Body() addCommentDto: AddCommentDto,
   ) {
-    const userId = req.user.userId; // Extract userId from JWT
-    return this.answersService.addComment(answerId, userId, addCommentDto);
+    return this.answersService.addComment(answerId, addCommentDto);
   }
 }

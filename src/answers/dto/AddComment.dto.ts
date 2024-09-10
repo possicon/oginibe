@@ -1,3 +1,11 @@
+import { IsNotEmpty, IsString } from 'class-validator';
+
 export class AddCommentDto {
-  readonly commentText: string;
+  @IsNotEmpty()
+  @IsString() // Validate that it's a string
+  commentText: string;
+
+  @IsNotEmpty()
+  @IsString() // Validate that it's a string
+  userId: string;
 }

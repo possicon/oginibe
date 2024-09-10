@@ -86,9 +86,27 @@ export class AnswersService {
       .sort({ createdAt: -1 })
       .populate({
         path: 'questionId',
-        populate: [{ path: 'categoryId' }, { path: 'userId' }],
+        populate: [
+          { path: 'categoryId' },
+          { path: 'userId', select: '-password' },
+        ],
       })
-      .populate('userId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .populate({
+        path: 'upvotes',
+        populate: [, { path: 'userId', select: '-password' }],
+      })
+      .populate('downvotes', 'firstName lastName email')
+      .populate({
+        path: 'comments', // Populate the userId inside the upvotes array
+        populate: {
+          path: 'userId', // Populate the 'userId' field within each comment
+          select: 'firstName lastName email', // Only retrieve the selected fields
+        },
+      })
       .exec();
     if (!answer) {
       throw new NotFoundException('User not found');
@@ -215,9 +233,15 @@ export class AnswersService {
       .sort({ createdAt: -1 })
       .populate({
         path: 'questionId',
-        populate: [{ path: 'categoryId' }, { path: 'userId' }],
+        populate: [
+          { path: 'categoryId' },
+          { path: 'userId', select: '-password' },
+        ],
       })
-      .populate('userId')
+      .populate({
+        path: 'userId', // Populate userId and exclude password
+        select: '-password',
+      })
       .exec();
   }
   async findOne(id: string): Promise<Answer> {
@@ -225,9 +249,15 @@ export class AnswersService {
       .findById(id)
       .populate({
         path: 'questionId',
-        populate: [{ path: 'categoryId' }, { path: 'userId' }],
+        populate: [
+          { path: 'categoryId' },
+          { path: 'userId', select: '-password' },
+        ],
       })
-      .populate('userId')
+      .populate({
+        path: 'userId', // Populate userId and exclude password
+        select: '-password',
+      })
       .exec();
     if (!answer) {
       throw new NotFoundException('Question not found');
@@ -280,18 +310,14 @@ export class AnswersService {
   remove(id: number) {
     return `This action removes a #${id} answer`;
   }
-  async addComment(
-    answerId: string,
-    userId: string,
-    addCommentDto: AddCommentDto,
-  ) {
+  async addComment(answerId: string, addCommentDto: AddCommentDto) {
     const answer = await this.answerModel.findById(answerId);
     if (!answer) {
       throw new NotFoundException('Answer not found');
     }
 
     const newComment: any = {
-      userId,
+      userId: addCommentDto.userId, // Now userId is added properly
       commentText: addCommentDto.commentText,
       createdAt: new Date(),
     };

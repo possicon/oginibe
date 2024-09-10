@@ -106,7 +106,10 @@ export class AuthService {
     };
   }
   async findAll(): Promise<User[]> {
-    return this.UserModel.find().sort({ createdAt: -1 }).exec();
+    return this.UserModel.find()
+      .sort({ createdAt: -1 })
+      .select('-password') // Exclude the password field
+      .exec();
   }
   async countUsers(): Promise<number> {
     return this.UserModel.countDocuments();

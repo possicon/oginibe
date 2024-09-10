@@ -38,24 +38,36 @@ export class AdminUserService {
   async findAll(): Promise<AdminUser[]> {
     return this.AdminUserModel.find()
       .sort({ createdAt: -1 })
-      .populate('userId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
       .exec();
   }
   async findAllAdminUsers(): Promise<AdminUser[]> {
     return this.AdminUserModel.find({ isAdmin: true })
       .sort({ createdAt: -1 })
-      .populate('userId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
       .exec();
   }
   async findAllAdminUsersRoles(role: string): Promise<AdminUser[]> {
     return this.AdminUserModel.find({ role })
       .sort({ createdAt: -1 })
-      .populate('userId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
       .exec();
   }
   async findOne(id: string): Promise<AdminUser> {
     const category = await this.AdminUserModel.findById(id)
-      .populate('userId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
       .exec();
     if (!category) {
       throw new NotFoundException('Admin User not found');
@@ -84,7 +96,10 @@ export class AdminUserService {
   }
   async findByUser(userId: string): Promise<AdminUser> {
     const adminUser = await this.AdminUserModel.findOne({ userId: userId })
-      .populate('userId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
       .exec();
     if (!adminUser) {
       throw new NotFoundException('Admin User not found');
