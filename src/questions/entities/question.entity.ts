@@ -29,6 +29,9 @@ export class Question extends Document {
 
   @Prop([{ type: Types.ObjectId, ref: 'User' }])
   downvotes: Types.ObjectId[];
+
+  @Prop({ type: [String], default: [] })
+  views: string[];
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

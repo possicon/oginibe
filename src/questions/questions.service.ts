@@ -335,4 +335,27 @@ export class QuestionsService {
 
     return this.QuestionModel.find(filter).exec();
   }
+
+  async viewQuestion(id: string, userId: string) {
+    const question = await this.QuestionModel.findById(id);
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+
+    // If the user hasn't viewed this question before, add the userId to the views array
+    if (!question.views.includes(userId)) {
+      question.views.push(userId);
+      await question.save();
+    }
+
+    return question;
+  }
+  async getQuestionViews(id: string) {
+    const question = await this.QuestionModel.findById(id);
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+
+    return { totalViews: question.views.length };
+  }
 }
