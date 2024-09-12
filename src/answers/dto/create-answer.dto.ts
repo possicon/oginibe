@@ -16,7 +16,6 @@ export class CreateAnswerDto {
   status?: string;
 
   @IsOptional()
-  @IsString()
   imageUrl?: string;
 
   imageUrls: string[];
