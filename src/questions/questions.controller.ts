@@ -153,14 +153,14 @@ export class QuestionsController {
     const userId = req.userId; // Assuming the user ID is stored in the request object after authentication
     return this.questionsService.changeQuestionStatus(questionId, adminId);
   }
-  @Get(':id/viewQuestion')
+  @Get(':id/stats')
   @UseGuards(UserAuthGuard)
   async viewQuestion(@Param('id') id: string, @Req() req) {
     const userId = req.userId; // Assuming user authentication and userId extraction are set up
     return await this.questionsService.viewQuestion(id, userId);
   }
 
-  @Get(':id/totalViews')
+  @Get(':id/totalStats')
   async getQuestionViews(@Param('id') id: string) {
     return await this.questionsService.getQuestionViews(id);
   }
