@@ -25,11 +25,11 @@ import { AddCommentDto } from './dto/AddComment.dto';
 export class AnswersController {
   constructor(private readonly answersService: AnswersService) {}
 
-  @Post()
+  @Post("sendMsg")
   async createAnswer(@Body() answerDto) {
     return this.answersService.createAnswer(answerDto);
   }
-  @Post('upload')
+  @Post("sendMsgImg")
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @UploadedFile() file: Express.Multer.File,
@@ -149,12 +149,13 @@ export class AnswersController {
   ) {
     return this.answersService.addComment(answerId, addCommentDto);
   }
-  @Post("sendMsg")
+  @Post()
   async createAnswerToEmail(@Body() answerDto) {
     return this.answersService.createAnswerToEmail(answerDto);
   }
-  @Post("sendMsgImg")
-  async createAnswerToEmailWithImg(@Body() answerDto) {
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('image'))
+  async createAnswerToEmailWithImg( @UploadedFile() file: Express.Multer.File,@Body() answerDto) {
     return this.answersService.createAnswerToEmailWithImg(answerDto);
   }
   
