@@ -149,4 +149,13 @@ export class AnswersController {
   ) {
     return this.answersService.addComment(answerId, addCommentDto);
   }
+  @Post("sendMsg")
+  async createAnswerToEmail(@Body() answerDto) {
+    return this.answersService.createAnswerToEmail(answerDto);
+  }
+  @Post("sendMsgImg")
+  async createAnswerToEmailWithImg(@Body() answerDto) {
+    return this.answersService.createAnswerToEmailWithImg(answerDto);
+  }
+  
 }

@@ -32,6 +32,9 @@ export class Question extends Document {
 
   @Prop({ type: [String], default: [] })
   views: string[];
+
+  @Prop({ required: false, default: false})
+  sendAnswerEmail: boolean;
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

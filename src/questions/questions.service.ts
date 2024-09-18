@@ -34,7 +34,7 @@ export class QuestionsService {
     const {
       title,
       description,
-
+sendAnswerEmail,
       userId,
       status,
       categoryId,
@@ -68,6 +68,7 @@ export class QuestionsService {
       imageUrl: imageUrls,
       userId,
       status,
+      sendAnswerEmail,
       categoryId,
       tags,
     });
@@ -77,7 +78,7 @@ export class QuestionsService {
       title: result.title,
       description: result.description,
       status: result.status,
-
+sendAnswerEmail:result.sendAnswerEmail,
       categoryId: result.categoryId,
       imageUrl: result.imageUrl,
       tags: result.tags,
@@ -92,7 +93,7 @@ export class QuestionsService {
       userId,
       status,
       categoryId,
-
+sendAnswerEmail,
       tags,
     } = createQuestionDto;
     const nameExits = await this.QuestionModel.findOne({
@@ -113,7 +114,7 @@ export class QuestionsService {
       userId,
       status,
       categoryId,
-
+sendAnswerEmail,
       tags,
     });
     const result = await createdQuestion.save();
@@ -122,7 +123,7 @@ export class QuestionsService {
       title: result.title,
       description: result.description,
       status: result.status,
-
+sendAnswerEmail:result.sendAnswerEmail,
       categoryId: result.categoryId,
       imageUrl: result.imageUrl,
       tags: result.tags,

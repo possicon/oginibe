@@ -11,6 +11,7 @@ import { QuestionsModule } from './questions/questions.module';
 import { CategoryQuestionsModule } from './category-questions/category-questions.module';
 import { AnswersModule } from './answers/answers.module';
 import { AdminUserModule } from './admin-user/admin-user.module';
+import { NewsletterModule } from './newsletter/newsletter.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { AdminUserModule } from './admin-user/admin-user.module';
     CategoryQuestionsModule,
     AnswersModule,
     AdminUserModule,
+    NewsletterModule,
   ],
   controllers: [AppController],
   providers: [AppService],

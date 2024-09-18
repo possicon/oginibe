@@ -13,6 +13,8 @@ import { User } from 'src/auth/schemas/user.schema';
 import { Question } from 'src/questions/entities/question.entity';
 import { AdminUser } from 'src/admin-user/entities/admin-user.entity';
 import { AddCommentDto } from './dto/AddComment.dto';
+import { AnswerMailService } from './services/answerMail';
+import { AnswerMailServiceWithImg } from './services/answerWithImg.Mail';
 const ImageKit = require('imagekit');
 @Injectable()
 export class AnswersService {
@@ -23,7 +25,7 @@ export class AnswersService {
     @InjectModel(AdminUser.name)
     private readonly AdminUserModel: Model<AdminUser>,
     @InjectModel(Question.name) private readonly questionModel: Model<Question>, // private readonly imagekit: ImageKitService, // private readonly imageKitService: ImageKitService,
-  ) {
+    private answerMailService: AnswerMailService,private answerMailServiceImg: AnswerMailServiceWithImg) {
     this.imagekit = new ImageKit({
       publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
       privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
@@ -325,4 +327,120 @@ export class AnswersService {
     answer.comments.push(newComment);
     return await answer.save();
   }
+  async createAnswerToEmail(createAnswerDto: CreateAnswerDto) {
+    const { text, questionId, userId } = createAnswerDto;
+    const nameExits = await this.answerModel.findOne({
+      text,
+      userId,
+      questionId,
+    });
+    if (nameExits) {
+      throw new BadRequestException(
+        'This user has already given an answer to this particular question',
+      );
+    }
+  
+    const createdAnswer = new this.answerModel({
+      text,
+      userId,
+      
+
+      questionId,
+    });
+    const result = await createdAnswer.save();
+    const question:any = await this.questionModel.findById(questionId).populate({
+      path: 'userId',
+      select: 'email name', // Populate only necessary fields
+    });
+    if (!question) {
+      throw new BadRequestException('Question not found');
+    }
+  
+    // Check if email needs to be sent
+    if (question.sendAnswerEmail === true) {
+      const enquirerEmail = question.userId.email;
+      const questionTitle = question.title; // Assuming there's a `title` field in the question
+  
+      // Send answer via email
+      try {
+        await this.answerMailService.sendAnswerToEnquirer(
+          enquirerEmail,
+          questionTitle,
+          text
+        );
+      } catch (error) {
+        throw new Error('Failed to send email');
+      }
+    }
+    return {
+      id: result._id,
+      text: result.text,
+      questionId: result.questionId,
+      status: result.status,
+      userId: result.userId,
+    };
+  }
+  async createAnswerToEmailWithImg(createAnswerDto: CreateAnswerDto) {
+    const { text, questionId, imageUrl,userId } = createAnswerDto;
+    const nameExits = await this.answerModel.findOne({
+      text,
+      userId,
+      questionId,
+    });
+    if (nameExits) {
+      throw new BadRequestException(
+        'This user has already given an answer to this particular question',
+      );
+    }
+    const imageUrls: string[] = [];
+    for (const image of imageUrl) {
+      const img = await this.imagekit.upload({
+        file: image,
+        fileName: `${text}-${new Date().getTime()}.jpg`,
+      });
+      imageUrls.push(img.url);
+    }
+    const createdAnswer = new this.answerModel({
+      text,
+      userId,
+      
+      imageUrl: imageUrls,
+      questionId,
+    });
+    const result = await createdAnswer.save();
+    const question:any = await this.questionModel.findById(questionId).populate({
+      path: 'userId',
+      select: 'email name', // Populate only necessary fields
+    });
+    if (!question) {
+      throw new BadRequestException('Question not found');
+    }
+  
+    // Check if email needs to be sent
+    if (question.sendAnswerEmail === true) {
+      const enquirerEmail = question.userId.email;
+      const questionTitle = question.title; // Assuming there's a `title` field in the question
+  
+      // Send answer via email
+      try {
+        await this.answerMailServiceImg.sendAnswerToEnquirerWithImg(
+          enquirerEmail,
+          questionTitle,
+          text,
+          imageUrl,
+        );
+      } catch (error) {
+        throw new Error('Failed to send email');
+      }
+    }
+    return {
+      id: result._id,
+      text: result.text,
+      questionId: result.questionId,
+      status: result.status,
+      imageUrl: result.imageUrl,
+      userId: result.userId,
+    };
+  }
+
 }

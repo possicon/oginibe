@@ -13,6 +13,8 @@ import {
   AdminUser,
   AdminUserSchema,
 } from 'src/admin-user/entities/admin-user.entity';
+import { AnswerMailService } from './services/answerMail';
+import { AnswerMailServiceWithImg } from './services/answerWithImg.Mail';
 
 @Module({
   imports: [
@@ -27,6 +29,6 @@ import {
   ],
 
   controllers: [AnswersController],
-  providers: [AnswersService, ImageKitService],
+  providers: [AnswersService, ImageKitService,AnswerMailService,AnswerMailServiceWithImg],
 })
 export class AnswersModule {}
