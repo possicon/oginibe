@@ -1,12 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type NewsletterDocument = Newsletter & Document;
 
 @Schema()
 export class Newsletter {
   @Prop({ required: true })
-  email: string;
+  from: string;
+
+
+  @Prop({required: true })
+  userEmail: string;
 
   @Prop({ required: true })
   subject: string;

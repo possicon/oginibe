@@ -8,7 +8,7 @@ export class NewsletterController {
   constructor(private readonly newsletterService: NewsletterService) {}
 
   // Create a new newsletter
-  @Post()
+  @Post("letter")
   create(@Body() createNewsletterDto: CreateNewsletterDto) {
     return this.newsletterService.create(createNewsletterDto);
   }
@@ -33,7 +33,13 @@ export class NewsletterController {
 
   // Delete a newsletter by ID
   @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.newsletterService.delete(id);
+  async delete(@Param('id') id: string) {
+    await this.newsletterService.delete(id);
+    return { message: 'Newsletter has been deleted successfully' };
+  }
+  /////Create a news letter and send to email
+  @Post()
+  createNews(@Body() createNewsletterDto: CreateNewsletterDto) {
+    return this.newsletterService.createNewsletterToUsersEmail(createNewsletterDto);
   }
 }

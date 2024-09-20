@@ -1,14 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateNewsletterDto } from './dto/create-newsletter.dto';
 import { UpdateNewsletterDto } from './dto/update-newsletter.dto';
 import { Newsletter, NewsletterDocument } from './entities/newsletter.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { User } from 'src/auth/schemas/user.schema';
+import { NewsletterMailService } from './service/Newsletter.mail';
 
 @Injectable()
 export class NewsletterService {
   constructor(
     @InjectModel(Newsletter.name) private newsletterModel: Model<NewsletterDocument>,
+    @InjectModel(User.name) private UserModel: Model<User>,
+    private newsMailService: NewsletterMailService,
   ) {}
   // Create a new newsletter
   async create(createNewsletterDto: CreateNewsletterDto): Promise<Newsletter> {
@@ -18,7 +22,7 @@ export class NewsletterService {
 
   // Retrieve all newsletters
   async findAll(): Promise<Newsletter[]> {
-    return this.newsletterModel.find().exec();
+    return this.newsletterModel.find().sort({ createdAt: -1 }).exec();
   }
 
   // Retrieve a single newsletter by ID
@@ -50,4 +54,121 @@ export class NewsletterService {
     }
     return deletedNewsletter;
   }
+  async createNewsletterToUserEmail(createnewsDto: CreateNewsletterDto) {
+    const { userEmail, from, subject, content} = createnewsDto;
+    const newsletterExits = await this.newsletterModel.findOne({
+      userEmail,
+      from,
+      subject,
+      content
+    });
+    if (newsletterExits ) {
+      throw new BadRequestException(
+        'News letter already exist',
+      );
+    }
+  const users:any= await this.UserModel.find().exec();
+  
+  if(!users||users.length===0){
+    throw new BadRequestException('Users not found');
+  }
+
+   // Loop through users and send newsletters
+   for (const user of users) {
+    if (!user.email) {
+      continue; // Skip users without an email
+    }
+    const createdNews = new this.newsletterModel({
+      userEmail:user.email,
+      from,
+      subject,
+
+      content,
+    });
+    const result = await createdNews.save();
+  
+  
+    // Check if email needs to be sent
+    
+  
+      // Send answer via email
+      try {
+        await this.newsMailService.sendNewsletterToUserEmail(
+          user.email,
+          subject,
+          content,
+          from
+        );
+      } catch (error) {
+        throw new Error('Failed to send email');
+      }
+      console.log(`Newsletter sent to ${user.email}`);
+    return {
+      id: result._id,
+      subject: result.subject,
+      content: result.content,
+      from: result.from,
+      userEmail: result.userEmail,
+    };
+  }
+}
+async createNewsletterToUsersEmail(createnewsDto: CreateNewsletterDto) {
+  const { userEmail, from, subject, content } = createnewsDto;
+
+  // Check if the newsletter with these details already exists
+  const newsletterExists = await this.newsletterModel.findOne({
+    userEmail,
+    from,
+    subject,
+    content,
+  });
+  if (newsletterExists) {
+    throw new BadRequestException('Newsletter already exists');
+  }
+
+  // Fetch all users
+  const users = await this.UserModel.find().exec();
+
+  // If no users are found
+  if (!users || users.length === 0) {
+    throw new BadRequestException('Users not found');
+  }
+
+  // Loop through users and send newsletters
+  for (const user of users) {
+    if (!user.email) {
+      continue; // Skip users without an email
+    }
+
+    // Create the newsletter for the user
+    const createdNews = new this.newsletterModel({
+      userEmail: user.email,
+      from,
+      subject,
+      content,
+    });
+     await createdNews.save();
+const receiverEmail=user.email
+    // Send the newsletter via email
+    try {
+      await this.newsMailService.sendNewsletterToUserEmail(
+       receiverEmail,
+        subject,
+        content,
+        from
+      );
+    } catch (error) {
+      throw new Error(`Failed to send email to ${user.email}`);
+    }
+
+    // Log or return the result for each user
+    console.log(`Newsletter sent to ${user.email}`);
+    
+  }
+  return {
+    message:"Newsletter has been sent to all the users",
+     
+    };
+
+}
 }
