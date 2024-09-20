@@ -12,6 +12,8 @@ import { CategoryQuestionsModule } from './category-questions/category-questions
 import { AnswersModule } from './answers/answers.module';
 import { AdminUserModule } from './admin-user/admin-user.module';
 import { NewsletterModule } from './newsletter/newsletter.module';
+import { TagsModule } from './tags/tags.module';
+import { NewsletterSubscribersModule } from './newsletter-subscribers/newsletter-subscribers.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { NewsletterModule } from './newsletter/newsletter.module';
     AnswersModule,
     AdminUserModule,
     NewsletterModule,
+    TagsModule,
+    NewsletterSubscribersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

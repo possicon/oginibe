@@ -6,12 +6,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/auth/schemas/user.schema';
 import { NewsletterMailService } from './service/Newsletter.mail';
+import { NewsletterSub } from 'src/newsletter-subscribers/entities/newsletter-subscriber.entity';
 
 @Injectable()
 export class NewsletterService {
   constructor(
     @InjectModel(Newsletter.name) private newsletterModel: Model<NewsletterDocument>,
     @InjectModel(User.name) private UserModel: Model<User>,
+    @InjectModel(NewsletterSub.name) private newsletterSubModel: Model<NewsletterSub>,
     private newsMailService: NewsletterMailService,
   ) {}
   // Create a new newsletter
@@ -66,7 +68,7 @@ export class NewsletterService {
       throw new BadRequestException(
         'News letter already exist',
       );
-    }
+    } 
   const users:any= await this.UserModel.find().exec();
   
   if(!users||users.length===0){
@@ -128,9 +130,9 @@ async createNewsletterToUsersEmail(createnewsDto: CreateNewsletterDto) {
 
   // Fetch all users
   const users = await this.UserModel.find().exec();
-
+const subscribers:any= await this.newsletterSubModel.find().exec()
   // If no users are found
-  if (!users || users.length === 0) {
+  if (!users || users.length === 0 || !subscribers || subscribers.length==0) {
     throw new BadRequestException('Users not found');
   }
 
@@ -142,13 +144,13 @@ async createNewsletterToUsersEmail(createnewsDto: CreateNewsletterDto) {
 
     // Create the newsletter for the user
     const createdNews = new this.newsletterModel({
-      userEmail: user.email,
+      userEmail: user.email || subscribers.email,
       from,
       subject,
       content,
     });
      await createdNews.save();
-const receiverEmail=user.email
+const receiverEmail=user.email || subscribers.email
     // Send the newsletter via email
     try {
       await this.newsMailService.sendNewsletterToUserEmail(
