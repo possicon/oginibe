@@ -318,7 +318,7 @@ sendAnswerEmail:result.sendAnswerEmail,
         'You do not have permission to change the status of this answer',
       );
     }
-  }
+  } 
   async searchQuestions(query: any): Promise<Question[]> {
     const filter: FilterQuery<Question> = {};
 
@@ -334,7 +334,11 @@ sendAnswerEmail:result.sendAnswerEmail,
 
     // Add more filters as needed
 
-    return this.QuestionModel.find(filter).exec();
+    return this.QuestionModel.find(filter).populate('categoryId')
+    .populate({
+      path: 'userId',
+      select: '-password', // Exclude the password field
+    }).exec(); 
   }
 
   async viewQuestion(id: string, userId: string) {
@@ -358,5 +362,33 @@ sendAnswerEmail:result.sendAnswerEmail,
     }
 
     return { totalViews: question.views.length };
+  }
+
+  async getUniqueTags(): Promise<string[]> {
+    try {
+      // Fetch unique tags using MongoDB's distinct method
+      const uniqueTags = await this.QuestionModel.distinct('tags', { tags: { $exists: true } });
+      return uniqueTags;
+    } catch (error) {
+      throw new Error(`Failed to fetch unique tags: ${error.message}`);
+    }
+  }
+  async getUniqueTagsCount(): Promise<{ tag: string, totalCount: number }[]> {
+    const tagCounts = await this.QuestionModel.aggregate([
+      // Unwind the tags array to get individual tags
+      { $unwind: '$tags' },
+  
+      // Group by each unique tag and count the occurrences
+      { $group: { _id: '$tags', totalCount: { $sum: 1 } } },
+  
+      // Rename _id to tag
+      { $project: { _id: 0, tag: '$_id', totalCount: 1 } }
+    ]);
+  
+    return tagCounts;
+  }
+  
+  async findQuestionsByTag(tag: string): Promise<Question[]> {
+    return this.QuestionModel.find({ tags: tag }).exec();
   }
 }

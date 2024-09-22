@@ -23,6 +23,10 @@ export class SignupDto {
   name: string;
 
   @IsOptional()
+  profilePics: string;
+  
+
+  @IsOptional()
   facebookId: string;
   @IsString()
   @MinLength(6)

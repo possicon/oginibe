@@ -9,6 +9,7 @@ import {
 } from './schemas/refresh-token.schema';
 import { ResetToken, ResetTokenSchema } from './schemas/reset-token.schema';
 import { MailService } from './services/mail.service';
+import { ImageKitServiceAuth } from './services/imageKit';
 
 @Module({
   imports: [
@@ -28,6 +29,6 @@ import { MailService } from './services/mail.service';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, MailService],
+  providers: [AuthService, MailService,ImageKitServiceAuth],
 })
 export class AuthModule {}

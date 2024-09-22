@@ -164,4 +164,16 @@ export class QuestionsController {
   async getQuestionViews(@Param('id') id: string) {
     return await this.questionsService.getQuestionViews(id);
   }
+  @Get('tags/list')
+  async getUniqueTags() {
+    return this.questionsService.getUniqueTags();
+  }
+  @Get('tags/list/count')
+  async getUniqueTagsCount() { 
+    return this.questionsService.getUniqueTagsCount();
+  } 
+  @Get('tags/:tag')
+  async getQuestionsByTag(@Param('tag') tag: string): Promise<Question[]> {
+    return this.questionsService.findQuestionsByTag(tag);
+  }
 }

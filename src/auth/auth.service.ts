@@ -18,9 +18,10 @@ import { nanoid } from 'nanoid';
 import { ResetToken } from './schemas/reset-token.schema';
 import { MailService } from 'src/auth/services/mail.service';
 // import { SearchUserDto } from './dtos/search.dto';
-
+const ImageKit = require('imagekit');
 @Injectable()
 export class AuthService {
+  private imagekit: ImageKit;
   constructor(
     @InjectModel(User.name) private UserModel: Model<User>,
     @InjectModel(RefreshToken.name)
@@ -29,7 +30,13 @@ export class AuthService {
     private ResetTokenModel: Model<ResetToken>,
     private jwtService: JwtService,
     private mailService: MailService,
-  ) {}
+  ) {
+    this.imagekit = new ImageKit({
+      publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
+      privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
+      urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+    });
+  }
 
   async signup(signupData: SignupDto) {
     const { email, password, firstName, lastName } = signupData;
@@ -79,7 +86,81 @@ export class AuthService {
       },
     };
   }
-
+  
+  async signupWithPix(signupData: SignupDto, ) {
+    const { email, password, firstName, lastName, profilePics } = signupData;
+  
+    // Check if email is in use
+    const emailInUse = await this.UserModel.findOne({ email });
+    if (emailInUse) {
+      throw new BadRequestException('Email already in use');
+    }
+  
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+  
+    // Initialize profilePicsUrl as undefined
+    let profilePicsUrl: string | undefined;
+  
+    if (profilePics) {
+      try {
+        // Log profilePics to check if the file is correctly uploaded
+        console.log('Received profilePics:', profilePics);
+  
+        const img = await this.imagekit.upload({
+          file: profilePics, // Ensure file buffer is correct
+          fileName: `${firstName}-${lastName}-${Date.now()}.jpg`, // Unique filename with timestamp
+          folder: "/profilePics",
+        });
+  
+        // Log the response from ImageKit
+        console.log('ImageKit upload response:', img);
+  
+        profilePicsUrl = img.url; // Assign uploaded image URL
+  
+      } catch (error) {
+        console.error('Error uploading to ImageKit:', error); // Log error for debugging
+        throw new BadRequestException('Error uploading profile picture');
+      }
+    }
+  
+    // Log the profilePicsUrl before saving to MongoDB
+    console.log('Profile picture URL:', profilePicsUrl);
+  
+    // Create user document and save in MongoDB
+    const newUser = new this.UserModel({
+      email,
+      password: hashedPassword,
+      firstName,
+      lastName,
+      profilePics: profilePicsUrl, // Save profilePics URL if provided
+    });
+  
+    await newUser.save();
+  
+    // Prepare JWT payload and sign the token
+    const payload = {
+      email: newUser.email,
+      sub: newUser._id,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+    };
+  
+    const token = this.jwtService.sign(payload);
+  
+    return {
+      token,
+      user: {
+        email: newUser.email,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        _id: newUser._id,
+        profilePics: newUser.profilePics, // Return profilePics in response if provided
+      },
+    };
+  }
+  
+  
   async login(credentials: LoginDto) {
     const { email, password } = credentials;
     //Find if user exists by email
@@ -173,7 +254,46 @@ export class AuthService {
 
     return user;
   }
-
+  async updateProfile(
+    id: string,
+    updateUserDto: Partial<SignupDto>,
+    profilePics?: Express.Multer.File,
+  ): Promise<User> {
+    // Handle password update
+    if (updateUserDto.password) {
+      const salt = await bcrypt.genSalt();
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
+    }
+  
+    // Handle profile picture upload if provided
+    if (profilePics) {
+      try {
+        const response = await this.imagekit.upload({
+          file: profilePics.buffer, // profilePic is the uploaded file from multer
+          fileName: `profile_${id}`, // You can customize the file name
+        });
+  
+        // Save ImageKit URL in the DTO
+        updateUserDto.profilePics= response.url;
+      } catch (error) {
+        throw new Error('Error uploading profile picture');
+      }
+    }
+  
+    const updateQuery: UpdateQuery<User> = updateUserDto;
+  
+    // Update user in MongoDB
+    const user = await this.UserModel.findByIdAndUpdate(id, updateQuery, {
+      new: true,
+    }).exec();
+  
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+  
+    return user;
+  }
+  
   async forgotPassword(email: string) {
     //Check that user exists
     const user = await this.UserModel.findOne({ email });

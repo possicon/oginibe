@@ -282,7 +282,17 @@ export class AnswersService {
 
     // Add more filters as needed
 
-    return this.answerModel.find(filter).exec();
+    return this.answerModel.find(filter).populate({
+      path: 'questionId',
+      populate: [
+        { path: 'categoryId' },
+        { path: 'userId', select: '-password' },
+      ],
+    })
+    .populate({
+      path: 'userId', // Populate userId and exclude password
+      select: '-password',
+    }).exec();
   }
   async changeAnswerStatusByAdmin(
     answerId: string,

@@ -22,12 +22,12 @@ export class NewsletterMailService {
     subject:string,
     content:string,
     from:string) {
-   
+      const Link = "https://ogini-dev.vercel.app/";
     const mailOptionsSend = {
       from: `${from}`,
       to: receiverEmail,
       subject: `${subject}`,
-      html: `<p>You have received a newsletter: <strong>${content}</strong></p>
+      html: `<p>You have received a newsletter: <strong>Pls click on this link to see all the answers to your question${Link}</strong></p>
             `,
     };
 

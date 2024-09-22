@@ -21,6 +21,8 @@ export class User extends Document {
   facebookId: String;
   @Prop()
   name: string;
+  @Prop({ required: false})
+  profilePics: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

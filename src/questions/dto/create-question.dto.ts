@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -34,8 +35,8 @@ export class CreateQuestionDto {
   sendAnswerEmail?:string;
 
   @IsOptional()
-  @IsString() // Ensure it's a string
-  tags?: string;
+  @IsArray() // Ensure it's a string
+  tags?: string[];
 
   upvotes?: string[];
 
