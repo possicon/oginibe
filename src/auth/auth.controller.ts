@@ -91,11 +91,7 @@ export class AuthController {
     return { message: 'User Deleted successfully' };
   }
 
-  // @Patch(':id/make-admin')
-  // @UseGuards(AdminGuard)
-  // async makeAdmin(@Param('id') id: string) {
-  //   return this.authService.makeAdmin(id);
-  // }
+
   @Post('refresh')
   async refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshTokens(refreshTokenDto.refreshToken);

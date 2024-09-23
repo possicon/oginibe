@@ -257,29 +257,40 @@ export class AuthService {
   async updateProfile(
     id: string,
     updateUserDto: Partial<SignupDto>,
-    profilePics?: Express.Multer.File,
+    
+    
   ): Promise<User> {
+    // const {profilePics}=updateUserDto
     // Handle password update
     if (updateUserDto.password) {
       const salt = await bcrypt.genSalt();
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
     }
   
-    // Handle profile picture upload if provided
-    if (profilePics) {
+ let profilePicsUrl: string | undefined;
+  
+    if (updateUserDto.profilePics) {
       try {
-        const response = await this.imagekit.upload({
-          file: profilePics.buffer, // profilePic is the uploaded file from multer
-          fileName: `profile_${id}`, // You can customize the file name
+        // Log profilePics to check if the file is correctly uploaded
+        console.log('Received profilePics:', updateUserDto.profilePics);
+  
+        const img = await this.imagekit.upload({
+          file: updateUserDto.profilePics, // Ensure file buffer is correct
+          fileName: `${updateUserDto.firstName}.jpg`, // Unique filename with timestamp
+          folder: "/profilePics",
         });
   
-        // Save ImageKit URL in the DTO
-        updateUserDto.profilePics= response.url;
+        // Log the response from ImageKit
+        console.log('ImageKit upload response:', img);
+  
+        profilePicsUrl = img.url; // Assign uploaded image URL
+        updateUserDto.profilePics=profilePicsUrl
+  
       } catch (error) {
-        throw new Error('Error uploading profile picture');
+        console.error('Error uploading to ImageKit:', error); // Log error for debugging
+        throw new BadRequestException('Error uploading profile picture');
       }
     }
-  
     const updateQuery: UpdateQuery<User> = updateUserDto;
   
     // Update user in MongoDB
