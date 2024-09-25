@@ -24,6 +24,7 @@ import { CloudinaryService } from './services/cloudinary.service';
 import { Types } from 'mongoose';
 import { Question } from './entities/question.entity';
 import { DeleteImageDto } from './dto/deletImage.dto';
+import { PaginationQueryDto } from './dto/pagination-questions.dto';
 // import { ImageKitService } from './services/imagekit';
 @Controller('questions')
 export class QuestionsController {
@@ -181,17 +182,16 @@ export class QuestionsController {
   async getQuestionsByTag(@Param('tag') tag: string): Promise<Question[]> {
     return this.questionsService.findQuestionsByTag(tag);
   }
-  @Get()
-  async findAllByPagination(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
-  ): Promise<Question[]> {
-    return this.questionsService.findAllByPagination(page, limit);
+  @Get("pag/all")
+  async getAllQuestions(@Query() page:number, pageSize:number) {
+    
+    const paginatedQuestions = await this.questionsService.getAllQuestionsWithPaginations(page, pageSize);
+    return paginatedQuestions; 
   }
-  @Get('/newest/new')
-  async getNewestQuestions() {
-    return this.questionsService.getNewestQuestions();
-  }
+  @Get('/newest/all')
+  async getNewestQuestions( @Query('limit') limit: number = 10): Promise<Question[]> {
+    return this.questionsService.getNewestQuestions(limit);
+  } 
   @Get('/unanswered/all')
   async getAllUnansweredQuestions(): Promise<Question[]> {
     return this.questionsService.getAllUnansweredQuestions();
@@ -208,5 +208,17 @@ export class QuestionsController {
     @Query('limit') limit: number = 10
   ): Promise<Question[]> {
     return this.questionsService.getPopularQuestions(limit);
+  }
+  @Get('/upvotes/all')
+  async getMostUpvotedQuestions(
+    @Query('limit') limit: number = 10
+  ): Promise<Question[]> {
+    return this.questionsService.getMostUpvotedQuestions(limit);
+  }
+  @Get('/downvotes/all')
+  async getMostDownvotedQuestions(
+    @Query('limit') limit: number = 10
+  ): Promise<Question[]> {
+    return this.questionsService.getMostdownvotedQuestions(limit);
   }
 }

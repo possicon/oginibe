@@ -439,41 +439,108 @@ sendAnswerEmail:result.sendAnswerEmail,
   async findQuestionsByTag(tag: string): Promise<Question[]> {
     return this.QuestionModel.find({ tags: tag }).exec();
   }
-  async findAllByPagination(page: number = 1, limit: number = 10): Promise<Question[]> {
+  async getAllQuestionsWithPagination(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
+
+    const [questions, totalCount] = await Promise.all([
+      this.QuestionModel
+        .find()
+        .populate('categoryId', 'name')  // If you want to populate the category
+        .populate('userId', 'username') // If you want to populate the user info
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.QuestionModel.countDocuments().exec(),
+    ]); 
+
+    return {
+      data: questions,
+      totalCount,
+      currentPage: page,
+      totalPages: Math.ceil(totalCount / limit),
+    };
+  }
+  async getAllQuestionsWithPaginations(page: number = 1, pageSize: number = 10) {
+    
+  const count = await this.QuestionModel.countDocuments();
   
-    return this.QuestionModel.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
+    const products = await this.QuestionModel.find()
+    .sort({ createdAt: -1 })
+      .limit(pageSize)
+      .skip(pageSize * (page - 1))
       .populate('categoryId')
       .populate({
         path: 'userId',
-        select: '-password', 
-      })
-      .exec();
+        select: '-password', // Exclude the password field
+      }).exec();
+    return({ products, page, pages: Math.ceil(count / pageSize) });
   }
-  async getNewestQuestions(): Promise<Question[]> {
-    return this.QuestionModel.find().sort({ createdAt: -1 }).exec();
+  async getNewestQuestions(limit:number=10): Promise<Question[]> {
+    return this.QuestionModel.find().sort({ createdAt: -1 }).populate('categoryId')
+    .populate({ 
+      path: 'userId',
+      select: '-password', // Exclude the password field
+    }).limit(limit) // Limit the number of results
+    .exec();
   }
     // Fetch all unanswered questions
     async getAllUnansweredQuestions(): Promise<Question[]> {
-      return this.QuestionModel.find({ answerStatus: 'UnAnswered' }).exec();
+      return this.QuestionModel.find({ answerStatus: 'UnAnswered' }).populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      }).exec();
     }
   
     // Fetch all answered questions
     async getAllAnsweredQuestions(): Promise<Question[]> {
-      return this.QuestionModel.find({ answerStatus: { $ne: 'UnAnswered' } }).exec();
+      return this.QuestionModel.find({ answerStatus: { $ne: 'UnAnswered' } }).populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      }).exec();
     }
      // Fetch all answered questions
      async getAllAnsweredQuestionsAll(): Promise<Question[]> {
-      return this.QuestionModel.find({ answerStatus:  'Answered'  }).exec();
+      return this.QuestionModel.find({ answerStatus:  'Answered'  }).populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      }).exec();
     }
     async getPopularQuestions(limit: number = 10): Promise<Question[]> {
       return this.QuestionModel
         .find()
         .sort({ views: -1 }) // Sort questions by the number of views (descending)
         .limit(limit) // Limit the number of results
-        .exec();
+        .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      }).exec();
+    }
+    async getMostUpvotedQuestions(limit: number = 10): Promise<Question[]> {
+      return this.QuestionModel
+        .find()
+        .sort({ upvotes: -1 }) // Sort by upvotes in descending order
+        .limit(limit) // Limit the number of questions
+        .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      }).exec(); // Execute the query
+    } 
+    
+    async getMostdownvotedQuestions(limit: number = 10): Promise<Question[]> {
+      return this.QuestionModel
+        .find()
+        .sort({ downvotes: -1 }) // Sort questions by the number of downvote (descending)
+        .limit(limit) // Limit the number of results
+        .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      }).exec();
     }
 }
+ 
