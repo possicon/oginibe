@@ -14,6 +14,7 @@ import { QuestionsCategory } from 'src/category-questions/entities/category-ques
 import { UpdateQuery } from 'mongoose';
 import { AdminUser } from 'src/admin-user/entities/admin-user.entity';
 import { DeleteImageDto } from './dto/deletImage.dto';
+import { User } from 'src/auth/schemas/user.schema';
 // import { ImageKitService } from './services/imagekit';
 const ImageKit = require('imagekit');
 @Injectable()
@@ -21,6 +22,8 @@ export class QuestionsService {
   private imagekit: ImageKit;
   constructor(
     @InjectModel(Question.name) private QuestionModel: Model<Question>,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+    
     @InjectModel(AdminUser.name) private adminUserModel: Model<AdminUser>,
   ) {
     this.imagekit = new ImageKit({
@@ -294,6 +297,33 @@ sendAnswerEmail:result.sendAnswerEmail,
 
     return question.save();
   }
+  async changeQuestionAnswerStatus(questionId: string, userId: string): Promise<Question> {
+  
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const question = await this.QuestionModel.findById(questionId);
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+    const adminUser = await this.adminUserModel.findOne({ userId });
+    // Check if the user is an admin or the owner of the question
+
+    if (
+      adminUser ||
+      new Types.ObjectId(question.userId).equals(new Types.ObjectId(userId))
+    ) {
+      question.answerStatus = 'Answered';
+      question.updatedAt = new Date();
+      return await question.save();
+    } else {
+      throw new ForbiddenException(
+        'You do not have permission to change the answer status of this question',
+      );
+    }
+  }
   async changeQuestionStatus(
     questionId: string,
     adminId: Types.ObjectId,
@@ -373,7 +403,7 @@ sendAnswerEmail:result.sendAnswerEmail,
       throw new Error(`Failed to fetch unique tags: ${error.message}`);
     }
   }
-  async getUniqueTagsCount(): Promise<{ tag: string, totalCount: number }[]> {
+  async getUniqueTagsCountwithemptyString(): Promise<{ tag: string, totalCount: number }[]> {
     const tagCounts = await this.QuestionModel.aggregate([
       // Unwind the tags array to get individual tags
       { $unwind: '$tags' },
@@ -387,8 +417,63 @@ sendAnswerEmail:result.sendAnswerEmail,
   
     return tagCounts;
   }
+  async getUniqueTagsCount(): Promise<{ tag: string, totalCount: number }[]> {
+    const tagCounts = await this.QuestionModel.aggregate([
+      // Match only documents where tags array contains non-empty strings
+      { $match: { tags: { $ne: "" } } },
+  
+      // Unwind the tags array to get individual tags
+      { $unwind: '$tags' },
+  
+      // Group by each unique tag and count the occurrences
+      { $group: { _id: '$tags', totalCount: { $sum: 1 } } },
+  
+      // Rename _id to tag
+      { $project: { _id: 0, tag: '$_id', totalCount: 1 } }
+    ]);
+  
+    return tagCounts;
+  }
+  
   
   async findQuestionsByTag(tag: string): Promise<Question[]> {
     return this.QuestionModel.find({ tags: tag }).exec();
   }
+  async findAllByPagination(page: number = 1, limit: number = 10): Promise<Question[]> {
+    const skip = (page - 1) * limit;
+  
+    return this.QuestionModel.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', 
+      })
+      .exec();
+  }
+  async getNewestQuestions(): Promise<Question[]> {
+    return this.QuestionModel.find().sort({ createdAt: -1 }).exec();
+  }
+    // Fetch all unanswered questions
+    async getAllUnansweredQuestions(): Promise<Question[]> {
+      return this.QuestionModel.find({ answerStatus: 'UnAnswered' }).exec();
+    }
+  
+    // Fetch all answered questions
+    async getAllAnsweredQuestions(): Promise<Question[]> {
+      return this.QuestionModel.find({ answerStatus: { $ne: 'UnAnswered' } }).exec();
+    }
+     // Fetch all answered questions
+     async getAllAnsweredQuestionsAll(): Promise<Question[]> {
+      return this.QuestionModel.find({ answerStatus:  'Answered'  }).exec();
+    }
+    async getPopularQuestions(limit: number = 10): Promise<Question[]> {
+      return this.QuestionModel
+        .find()
+        .sort({ views: -1 }) // Sort questions by the number of views (descending)
+        .limit(limit) // Limit the number of results
+        .exec();
+    }
 }

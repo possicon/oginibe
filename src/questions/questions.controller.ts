@@ -159,8 +159,13 @@ export class QuestionsController {
     const userId = req.userId; // Assuming user authentication and userId extraction are set up
     return await this.questionsService.viewQuestion(id, userId);
   }
-
-  @Get(':id/totalStats')
+  @UseGuards(UserAuthGuard)
+  @Patch(':id/answerStatus')
+  async changeAnswerStatus(@Param('id') answerId: string, @Req() req) {
+    const userId = req.userId; // Assuming the user ID is stored in the request object after authentication
+    return this.questionsService.changeQuestionAnswerStatus(answerId, userId);
+  }
+  @Get(':id/totalStats') 
   async getQuestionViews(@Param('id') id: string) {
     return await this.questionsService.getQuestionViews(id);
   }
@@ -175,5 +180,33 @@ export class QuestionsController {
   @Get('tags/:tag')
   async getQuestionsByTag(@Param('tag') tag: string): Promise<Question[]> {
     return this.questionsService.findQuestionsByTag(tag);
+  }
+  @Get()
+  async findAllByPagination(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<Question[]> {
+    return this.questionsService.findAllByPagination(page, limit);
+  }
+  @Get('/newest/new')
+  async getNewestQuestions() {
+    return this.questionsService.getNewestQuestions();
+  }
+  @Get('/unanswered/all')
+  async getAllUnansweredQuestions(): Promise<Question[]> {
+    return this.questionsService.getAllUnansweredQuestions();
+  }
+
+  
+  @Get('/answered/all')
+  async getAllAnsweredQuestions(): Promise<Question[]> {
+    return this.questionsService.getAllAnsweredQuestionsAll();
+  }
+
+  @Get('/popular/all')
+  async getPopularQuestions(
+    @Query('limit') limit: number = 10
+  ): Promise<Question[]> {
+    return this.questionsService.getPopularQuestions(limit);
   }
 }

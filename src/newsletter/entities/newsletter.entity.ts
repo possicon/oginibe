@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 
 export type NewsletterDocument = Newsletter & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Newsletter {
   @Prop({ required: true })
   from: string;

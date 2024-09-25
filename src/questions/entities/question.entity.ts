@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-@Schema()
+@Schema({ timestamps: true })
 export class Question extends Document {
   @Prop({ required: true })
   title: string;
@@ -15,6 +15,9 @@ export class Question extends Document {
   @Prop({ required: false, default: 'Enable' })
   status: string;
 
+  @Prop({ required: false, default: 'UnAnswered' })
+  answerStatus: string;
+   
   @Prop({ type: [String], required: false })
   imageUrl: string[];
 
@@ -35,6 +38,12 @@ export class Question extends Document {
 
   @Prop({ required: false, default: false})
   sendAnswerEmail: boolean;
+
+  @Prop({ type: Date, default: Date.now })
+  createdAt: Date;
+
+  @Prop({ type: Date, default: Date.now })
+  updatedAt: Date;
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

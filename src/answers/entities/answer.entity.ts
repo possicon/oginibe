@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-@Schema()
+@Schema({ timestamps: true })
 export class Comment {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
@@ -12,7 +12,7 @@ export class Comment {
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;
 }
-@Schema()
+@Schema({ timestamps: true })
 export class Answer extends Document {
   @Prop({ required: true })
   text: string;

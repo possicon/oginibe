@@ -13,6 +13,7 @@ import {
   AdminUser,
   AdminUserSchema,
 } from 'src/admin-user/entities/admin-user.entity';
+import { User, UserSchema } from 'src/auth/schemas/user.schema';
 
 // import { CloudinaryService } from './services/cloudinary.service';
 // import { CloudinaryConfig } from './services/cloudinary';
@@ -29,6 +30,7 @@ import {
         schema: QuestionsCategorySchema,
       },
     ]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forFeature([
       { name: AdminUser.name, schema: AdminUserSchema },
     ]),

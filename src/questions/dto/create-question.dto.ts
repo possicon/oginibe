@@ -41,5 +41,8 @@ export class CreateQuestionDto {
   upvotes?: string[];
 
   downvotes?: string[];
+
+  @IsOptional()
+  answerStatus?:string;
   
 }
