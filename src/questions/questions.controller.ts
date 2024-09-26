@@ -24,6 +24,7 @@ import { CloudinaryService } from './services/cloudinary.service';
 import { Types } from 'mongoose';
 import { Question } from './entities/question.entity';
 import { DeleteImageDto } from './dto/deletImage.dto';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 import { PaginationQueryDto } from './dto/pagination-questions.dto';
 // import { ImageKitService } from './services/imagekit';
 @Controller('questions')
@@ -183,6 +184,10 @@ export class QuestionsController {
     return this.questionsService.findQuestionsByTag(tag);
   }
   @Get("pag/all")
+  async getAllQuestionwithPag(@Query() query: ExpressQuery): Promise<Question[]> {
+    return this.questionsService.findAllQuestionwithPagination(query);
+  }
+  @Get("pagination/all")
   async getAllQuestions(@Query() page:number, pageSize:number) {
     
     const paginatedQuestions = await this.questionsService.getAllQuestionsWithPaginations(page, pageSize);

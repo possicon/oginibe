@@ -15,6 +15,7 @@ import { UpdateQuery } from 'mongoose';
 import { AdminUser } from 'src/admin-user/entities/admin-user.entity';
 import { DeleteImageDto } from './dto/deletImage.dto';
 import { User } from 'src/auth/schemas/user.schema';
+import { Query } from 'express-serve-static-core';
 // import { ImageKitService } from './services/imagekit';
 const ImageKit = require('imagekit');
 @Injectable()
@@ -542,5 +543,21 @@ sendAnswerEmail:result.sendAnswerEmail,
         select: '-password', // Exclude the password field
       }).exec();
     }
+      async findAllQuestionwithPagination(query: Query): Promise<Question[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
+    const books = await this.QuestionModel
+      .find()
+      .sort({ createdAt: -1 })
+      .limit(resPerPage)
+      .skip(skip)
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      }).exec();
+    return books;
+  } 
 }
  
