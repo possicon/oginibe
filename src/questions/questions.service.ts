@@ -16,6 +16,7 @@ import { AdminUser } from 'src/admin-user/entities/admin-user.entity';
 import { DeleteImageDto } from './dto/deletImage.dto';
 import { User } from 'src/auth/schemas/user.schema';
 import { Query } from 'express-serve-static-core';
+import { Answer } from 'src/answers/entities/answer.entity';
 // import { ImageKitService } from './services/imagekit';
 const ImageKit = require('imagekit');
 @Injectable()
@@ -24,7 +25,7 @@ export class QuestionsService {
   constructor(
     @InjectModel(Question.name) private QuestionModel: Model<Question>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
-    
+    @InjectModel(Answer.name) private answerModel: Model<Answer>,
     @InjectModel(AdminUser.name) private adminUserModel: Model<AdminUser>,
   ) {
     this.imagekit = new ImageKit({
@@ -559,5 +560,74 @@ sendAnswerEmail:result.sendAnswerEmail,
       }).exec();
     return books;
   } 
+  async getAnswersWithTextGreaterThanZero(): Promise<{ question: Question, answers: Answer[] }[]> {
+    // Fetch all questions
+    const questions = await this.QuestionModel.find().sort({ createdAt: -1 })
+    .populate('categoryId')
+    .populate({
+      path: 'userId',
+      select: '-password', // Exclude the password field
+    }).exec();
+  
+    // Fetch answers where the text length is greater than zero
+    const answers = await this.answerModel.find({ 
+      $expr: { $gt: [{ $strLenCP: "$text" }, 0] }
+    }).sort({ createdAt: -1 })
+    .populate({
+      path: 'userId',
+      select: '-password', // Exclude the password field
+    }).exec();
+  
+    // Create an array to store results
+    const result: { question: Question, answers: Answer[] }[] = [];
+  
+    // Loop through each question and filter answers based on questionId
+    for (const question of questions) {
+      const matchingAnswers = answers.filter(answer => 
+        answer.questionId.toString() === question._id.toString()
+      );
+  
+      // Only include questions that have matching answers
+      if (matchingAnswers.length > 0) {
+        result.push({ question, answers: matchingAnswers });
+      }
+    }
+  
+    // Return the result
+    return result;
+  }
+  async getUnansweredQuestionsOrTextLengthZero(): Promise<{ question: Question }[]> {
+    // Fetch all questions
+    const questions = await this.QuestionModel.find().sort({ createdAt: -1 })
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      }).exec();
+  
+    // Fetch answers where the text length is zero or less
+    const answers = await this.answerModel.find({ 
+      $expr: { $lte: [{ $strLenCP: "$text" }, 0] }
+    }).exec();
+  
+    // Create an array to store results
+    const result: { question: Question }[] = [];
+  
+    // Loop through each question and filter out answers based on questionId
+    for (const question of questions) {
+      const matchingAnswers = answers.filter(answer => 
+        answer.questionId.toString() === question._id.toString()
+      );
+  
+      // Only include questions that either have no answers or answers with zero or less text length
+      if (matchingAnswers.length === 0) {
+        result.push({ question });
+      }
+    }
+  
+    // Return the result
+    return result;
+  }
+  
 }
  

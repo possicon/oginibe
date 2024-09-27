@@ -26,6 +26,7 @@ import { Question } from './entities/question.entity';
 import { DeleteImageDto } from './dto/deletImage.dto';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { PaginationQueryDto } from './dto/pagination-questions.dto';
+import { Answer } from 'src/answers/entities/answer.entity';
 // import { ImageKitService } from './services/imagekit';
 @Controller('questions')
 export class QuestionsController {
@@ -183,10 +184,7 @@ export class QuestionsController {
   async getQuestionsByTag(@Param('tag') tag: string): Promise<Question[]> {
     return this.questionsService.findQuestionsByTag(tag);
   }
-  @Get("pag/all")
-  async getAllQuestionwithPag(@Query() query: ExpressQuery): Promise<Question[]> {
-    return this.questionsService.findAllQuestionwithPagination(query);
-  }
+  
   @Get("pagination/all")
   async getAllQuestions(@Query() page:number, pageSize:number) {
     
@@ -197,13 +195,13 @@ export class QuestionsController {
   async getNewestQuestions( @Query('limit') limit: number = 10): Promise<Question[]> {
     return this.questionsService.getNewestQuestions(limit);
   } 
-  @Get('/unanswered/all')
+  @Get('/unansweredStatus/all')
   async getAllUnansweredQuestions(): Promise<Question[]> {
     return this.questionsService.getAllUnansweredQuestions();
   }
 
   
-  @Get('/answered/all')
+  @Get('/answeredStatus/all')
   async getAllAnsweredQuestions(): Promise<Question[]> {
     return this.questionsService.getAllAnsweredQuestionsAll();
   }
@@ -225,5 +223,17 @@ export class QuestionsController {
     @Query('limit') limit: number = 10
   ): Promise<Question[]> {
     return this.questionsService.getMostdownvotedQuestions(limit);
+  }
+  @Get('/answered/all')
+  async getQuestionsWithAnswers(): Promise<{ question: Question, answers: Answer[] }[]> {
+    return await this.questionsService.getAnswersWithTextGreaterThanZero();
+  }
+  @Get('/unanswered/all')
+  async getUnansweredQuestionsOrTextLengthZero(): Promise<{ question: Question }[]> {
+    return this.questionsService.getUnansweredQuestionsOrTextLengthZero();
+  }
+  @Get("pag/all")
+  async getAllQuestionwithPag(@Query() query: ExpressQuery): Promise<Question[]> {
+    return this.questionsService.findAllQuestionwithPagination(query);
   }
 }

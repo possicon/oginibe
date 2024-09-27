@@ -72,6 +72,7 @@ export class AuthService {
       // isAdmin: newUser.isAdmin,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
+      profilePics:newUser.profilePics
     };
     const token = this.jwtService.sign(payload);
 
@@ -82,6 +83,7 @@ export class AuthService {
         // isAdmin: newUser.isAdmin,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
+        profilePics:newUser.profilePics,
         _id: newUser._id,
       },
     };
@@ -144,6 +146,7 @@ export class AuthService {
       sub: newUser._id,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
+      profilePics:newUser.profilePics,
     };
   
     const token = this.jwtService.sign(payload);
@@ -184,6 +187,7 @@ export class AuthService {
       // isAdmin: user.isAdmin,
       firstName: user.firstName,
       lastName: user.lastName,
+      profilePics:user.profilePics
     };
   }
   async findAll(): Promise<User[]> {
