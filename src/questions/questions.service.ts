@@ -39,7 +39,7 @@ export class QuestionsService {
     const {
       title,
       description,
-sendAnswerEmail,
+      sendAnswerEmail,
       userId,
       status,
       categoryId,
@@ -83,7 +83,7 @@ sendAnswerEmail,
       title: result.title,
       description: result.description,
       status: result.status,
-sendAnswerEmail:result.sendAnswerEmail,
+      sendAnswerEmail: result.sendAnswerEmail,
       categoryId: result.categoryId,
       imageUrl: result.imageUrl,
       tags: result.tags,
@@ -98,7 +98,7 @@ sendAnswerEmail:result.sendAnswerEmail,
       userId,
       status,
       categoryId,
-sendAnswerEmail,
+      sendAnswerEmail,
       tags,
     } = createQuestionDto;
     const nameExits = await this.QuestionModel.findOne({
@@ -119,7 +119,7 @@ sendAnswerEmail,
       userId,
       status,
       categoryId,
-sendAnswerEmail,
+      sendAnswerEmail,
       tags,
     });
     const result = await createdQuestion.save();
@@ -128,7 +128,7 @@ sendAnswerEmail,
       title: result.title,
       description: result.description,
       status: result.status,
-sendAnswerEmail:result.sendAnswerEmail,
+      sendAnswerEmail: result.sendAnswerEmail,
       categoryId: result.categoryId,
       imageUrl: result.imageUrl,
       tags: result.tags,
@@ -299,8 +299,10 @@ sendAnswerEmail:result.sendAnswerEmail,
 
     return question.save();
   }
-  async changeQuestionAnswerStatus(questionId: string, userId: string): Promise<Question> {
-  
+  async changeQuestionAnswerStatus(
+    questionId: string,
+    userId: string,
+  ): Promise<Question> {
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -350,27 +352,6 @@ sendAnswerEmail:result.sendAnswerEmail,
         'You do not have permission to change the status of this answer',
       );
     }
-  } 
-  async searchQuestions(query: any): Promise<Question[]> {
-    const filter: FilterQuery<Question> = {};
-
-    if (query.title) {
-      filter.title = { $regex: query.title, $options: 'i' }; // case-insensitive search
-    }
-    if (query.description) {
-      filter.description = { $regex: query.description, $options: 'i' };
-    }
-    if (query.tags) {
-      filter.tags = { $regex: query.tags, $options: 'i' };
-    }
-
-    // Add more filters as needed
-
-    return this.QuestionModel.find(filter).populate('categoryId')
-    .populate({
-      path: 'userId',
-      select: '-password', // Exclude the password field
-    }).exec(); 
   }
 
   async viewQuestion(id: string, userId: string) {
@@ -399,45 +380,48 @@ sendAnswerEmail:result.sendAnswerEmail,
   async getUniqueTags(): Promise<string[]> {
     try {
       // Fetch unique tags using MongoDB's distinct method
-      const uniqueTags = await this.QuestionModel.distinct('tags', { tags: { $exists: true } });
+      const uniqueTags = await this.QuestionModel.distinct('tags', {
+        tags: { $exists: true },
+      });
       return uniqueTags;
     } catch (error) {
       throw new Error(`Failed to fetch unique tags: ${error.message}`);
     }
   }
-  async getUniqueTagsCountwithemptyString(): Promise<{ tag: string, totalCount: number }[]> {
+  async getUniqueTagsCountwithemptyString(): Promise<
+    { tag: string; totalCount: number }[]
+  > {
     const tagCounts = await this.QuestionModel.aggregate([
       // Unwind the tags array to get individual tags
       { $unwind: '$tags' },
-  
+
       // Group by each unique tag and count the occurrences
       { $group: { _id: '$tags', totalCount: { $sum: 1 } } },
-  
+
       // Rename _id to tag
-      { $project: { _id: 0, tag: '$_id', totalCount: 1 } }
+      { $project: { _id: 0, tag: '$_id', totalCount: 1 } },
     ]);
-  
+
     return tagCounts;
   }
-  async getUniqueTagsCount(): Promise<{ tag: string, totalCount: number }[]> {
+  async getUniqueTagsCount(): Promise<{ tag: string; totalCount: number }[]> {
     const tagCounts = await this.QuestionModel.aggregate([
       // Match only documents where tags array contains non-empty strings
-      { $match: { tags: { $ne: "" } } },
-  
+      { $match: { tags: { $ne: '' } } },
+
       // Unwind the tags array to get individual tags
       { $unwind: '$tags' },
-  
+
       // Group by each unique tag and count the occurrences
       { $group: { _id: '$tags', totalCount: { $sum: 1 } } },
-  
+
       // Rename _id to tag
-      { $project: { _id: 0, tag: '$_id', totalCount: 1 } }
+      { $project: { _id: 0, tag: '$_id', totalCount: 1 } },
     ]);
-  
+
     return tagCounts;
   }
-  
-  
+
   async findQuestionsByTag(tag: string): Promise<Question[]> {
     return this.QuestionModel.find({ tags: tag }).exec();
   }
@@ -445,15 +429,14 @@ sendAnswerEmail:result.sendAnswerEmail,
     const skip = (page - 1) * limit;
 
     const [questions, totalCount] = await Promise.all([
-      this.QuestionModel
-        .find()
-        .populate('categoryId', 'name')  // If you want to populate the category
+      this.QuestionModel.find()
+        .populate('categoryId', 'name') // If you want to populate the category
         .populate('userId', 'username') // If you want to populate the user info
         .skip(skip)
         .limit(limit)
         .exec(),
       this.QuestionModel.countDocuments().exec(),
-    ]); 
+    ]);
 
     return {
       data: questions,
@@ -462,94 +445,105 @@ sendAnswerEmail:result.sendAnswerEmail,
       totalPages: Math.ceil(totalCount / limit),
     };
   }
-  async getAllQuestionsWithPaginations(page: number = 1, pageSize: number = 10) {
-    
-  const count = await this.QuestionModel.countDocuments();
-  
+  async getAllQuestionsWithPaginations(
+    page: number = 1,
+    pageSize: number = 10,
+  ) {
+    const count = await this.QuestionModel.countDocuments();
+
     const products = await this.QuestionModel.find()
-    .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 })
       .limit(pageSize)
       .skip(pageSize * (page - 1))
       .populate('categoryId')
       .populate({
         path: 'userId',
         select: '-password', // Exclude the password field
-      }).exec();
-    return({ products, page, pages: Math.ceil(count / pageSize) });
+      })
+      .exec();
+    return { products, page, pages: Math.ceil(count / pageSize) };
   }
-  async getNewestQuestions(limit:number=10): Promise<Question[]> {
-    return this.QuestionModel.find().sort({ createdAt: -1 }).populate('categoryId')
-    .populate({ 
-      path: 'userId',
-      select: '-password', // Exclude the password field
-    }).limit(limit) // Limit the number of results
-    .exec();
+  async getNewestQuestions(limit: number = 10): Promise<Question[]> {
+    return this.QuestionModel.find()
+      .sort({ createdAt: -1 })
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .limit(limit) // Limit the number of results
+      .exec();
   }
-    // Fetch all unanswered questions
-    async getAllUnansweredQuestions(): Promise<Question[]> {
-      return this.QuestionModel.find({ answerStatus: 'UnAnswered' }).populate('categoryId')
+  // Fetch all unanswered questions
+  async getAllUnansweredQuestions(): Promise<Question[]> {
+    return this.QuestionModel.find({ answerStatus: 'UnAnswered' })
+      .populate('categoryId')
       .populate({
         path: 'userId',
         select: '-password', // Exclude the password field
-      }).exec();
-    }
-  
-    // Fetch all answered questions
-    async getAllAnsweredQuestions(): Promise<Question[]> {
-      return this.QuestionModel.find({ answerStatus: { $ne: 'UnAnswered' } }).populate('categoryId')
+      })
+      .exec();
+  }
+
+  // Fetch all answered questions
+  async getAllAnsweredQuestions(): Promise<Question[]> {
+    return this.QuestionModel.find({ answerStatus: { $ne: 'UnAnswered' } })
+      .populate('categoryId')
       .populate({
         path: 'userId',
         select: '-password', // Exclude the password field
-      }).exec();
-    }
-     // Fetch all answered questions
-     async getAllAnsweredQuestionsAll(): Promise<Question[]> {
-      return this.QuestionModel.find({ answerStatus:  'Answered'  }).populate('categoryId')
+      })
+      .exec();
+  }
+  // Fetch all answered questions
+  async getAllAnsweredQuestionsAll(): Promise<Question[]> {
+    return this.QuestionModel.find({ answerStatus: 'Answered' })
+      .populate('categoryId')
       .populate({
         path: 'userId',
         select: '-password', // Exclude the password field
-      }).exec();
-    }
-    async getPopularQuestions(limit: number = 10): Promise<Question[]> {
-      return this.QuestionModel
-        .find()
-        .sort({ views: -1 }) // Sort questions by the number of views (descending)
-        .limit(limit) // Limit the number of results
-        .populate('categoryId')
+      })
+      .exec();
+  }
+  async getPopularQuestions(limit: number = 10): Promise<Question[]> {
+    return this.QuestionModel.find()
+      .sort({ views: -1 }) // Sort questions by the number of views (descending)
+      .limit(limit) // Limit the number of results
+      .populate('categoryId')
       .populate({
         path: 'userId',
         select: '-password', // Exclude the password field
-      }).exec();
-    }
-    async getMostUpvotedQuestions(limit: number = 10): Promise<Question[]> {
-      return this.QuestionModel
-        .find()
-        .sort({ upvotes: -1 }) // Sort by upvotes in descending order
-        .limit(limit) // Limit the number of questions
-        .populate('categoryId')
+      })
+      .exec();
+  }
+  async getMostUpvotedQuestions(limit: number = 10): Promise<Question[]> {
+    return this.QuestionModel.find()
+      .sort({ upvotes: -1 }) // Sort by upvotes in descending order
+      .limit(limit) // Limit the number of questions
+      .populate('categoryId')
       .populate({
         path: 'userId',
         select: '-password', // Exclude the password field
-      }).exec(); // Execute the query
-    } 
-    
-    async getMostdownvotedQuestions(limit: number = 10): Promise<Question[]> {
-      return this.QuestionModel
-        .find()
-        .sort({ downvotes: -1 }) // Sort questions by the number of downvote (descending)
-        .limit(limit) // Limit the number of results
-        .populate('categoryId')
+      })
+      .exec(); // Execute the query
+  }
+
+  async getMostdownvotedQuestions(limit: number = 10): Promise<Question[]> {
+    return this.QuestionModel.find()
+      .sort({ downvotes: -1 }) // Sort questions by the number of downvote (descending)
+      .limit(limit) // Limit the number of results
+      .populate('categoryId')
       .populate({
         path: 'userId',
         select: '-password', // Exclude the password field
-      }).exec();
-    }
-      async findAllQuestionwithPagination(query: Query): Promise<Question[]> {
+      })
+      .exec();
+  }
+  async findAllQuestionwithPagination(query: Query): Promise<Question[]> {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    const books = await this.QuestionModel
-      .find()
+    const books = await this.QuestionModel.find()
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
@@ -557,77 +551,112 @@ sendAnswerEmail:result.sendAnswerEmail,
       .populate({
         path: 'userId',
         select: '-password', // Exclude the password field
-      }).exec();
+      })
+      .exec();
     return books;
-  } 
-  async getAnswersWithTextGreaterThanZero(): Promise<{ question: Question, answers: Answer[] }[]> {
+  }
+  async getAnswersWithTextGreaterThanZero(): Promise<
+    { question: Question; answers: Answer[] }[]
+  > {
     // Fetch all questions
-    const questions = await this.QuestionModel.find().sort({ createdAt: -1 })
-    .populate('categoryId')
-    .populate({
-      path: 'userId',
-      select: '-password', // Exclude the password field
-    }).exec();
-  
+    const questions = await this.QuestionModel.find()
+      .sort({ createdAt: -1 })
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .exec();
+
     // Fetch answers where the text length is greater than zero
-    const answers = await this.answerModel.find({ 
-      $expr: { $gt: [{ $strLenCP: "$text" }, 0] }
-    }).sort({ createdAt: -1 })
-    .populate({
-      path: 'userId',
-      select: '-password', // Exclude the password field
-    }).exec();
-  
+    const answers = await this.answerModel
+      .find({
+        $expr: { $gt: [{ $strLenCP: '$text' }, 0] },
+      })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .exec();
+
     // Create an array to store results
-    const result: { question: Question, answers: Answer[] }[] = [];
-  
+    const result: { question: Question; answers: Answer[] }[] = [];
+
     // Loop through each question and filter answers based on questionId
     for (const question of questions) {
-      const matchingAnswers = answers.filter(answer => 
-        answer.questionId.toString() === question._id.toString()
+      const matchingAnswers = answers.filter(
+        (answer) => answer.questionId.toString() === question._id.toString(),
       );
-  
+
       // Only include questions that have matching answers
       if (matchingAnswers.length > 0) {
         result.push({ question, answers: matchingAnswers });
       }
     }
-  
+
     // Return the result
     return result;
   }
-  async getUnansweredQuestionsOrTextLengthZero(): Promise<{ question: Question }[]> {
+  async getUnansweredQuestionsOrTextLengthZero(): Promise<
+    { question: Question }[]
+  > {
     // Fetch all questions
-    const questions = await this.QuestionModel.find().sort({ createdAt: -1 })
+    const questions = await this.QuestionModel.find()
+      .sort({ createdAt: -1 })
       .populate('categoryId')
       .populate({
         path: 'userId',
         select: '-password', // Exclude the password field
-      }).exec();
-  
+      })
+      .exec();
+
     // Fetch answers where the text length is zero or less
-    const answers = await this.answerModel.find({ 
-      $expr: { $lte: [{ $strLenCP: "$text" }, 0] }
-    }).exec();
-  
+    const answers = await this.answerModel
+      .find({
+        $expr: { $lte: [{ $strLenCP: '$text' }, 0] },
+      })
+      .exec();
+
     // Create an array to store results
     const result: { question: Question }[] = [];
-  
+
     // Loop through each question and filter out answers based on questionId
     for (const question of questions) {
-      const matchingAnswers = answers.filter(answer => 
-        answer.questionId.toString() === question._id.toString()
+      const matchingAnswers = answers.filter(
+        (answer) => answer.questionId.toString() === question._id.toString(),
       );
-  
+
       // Only include questions that either have no answers or answers with zero or less text length
       if (matchingAnswers.length === 0) {
         result.push({ question });
       }
     }
-  
+
     // Return the result
     return result;
   }
-  
+  async searchQuestions(query: any): Promise<Question[]> {
+    const filter: FilterQuery<Question> = {};
+
+    if (query.title) {
+      filter.title = { $regex: query.title, $options: 'i' }; // case-insensitive search
+    }
+    if (query.description) {
+      filter.description = { $regex: query.description, $options: 'i' };
+    }
+    if (query.tags) {
+      filter.tags = { $regex: query.tags, $options: 'i' };
+    }
+
+    // Add more filters as needed
+
+    return this.QuestionModel.find(filter)
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .exec();
+  }
 }
- 

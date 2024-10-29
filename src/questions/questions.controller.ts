@@ -34,10 +34,12 @@ export class QuestionsController {
     private readonly questionsService: QuestionsService, // private readonly imageKitService: ImageKitService, // private readonly cloudinaryService: CloudinaryService,
   ) {}
 
+  @UseGuards(UserAuthGuard)
   @Post()
   async createQuestion(@Body() createQuestionDto: CreateQuestionDto) {
     return this.questionsService.createQuestion(createQuestionDto);
   }
+  @UseGuards(UserAuthGuard)
   @Post('upload')
   @UseInterceptors(FileInterceptor('image'))
   async create(
@@ -95,6 +97,8 @@ export class QuestionsController {
       status,
     );
   }
+
+  @UseGuards(UserAuthGuard)
   @Delete(':id/image')
   async deleteImage(
     @Param('id') id: string,
@@ -168,7 +172,7 @@ export class QuestionsController {
     const userId = req.userId; // Assuming the user ID is stored in the request object after authentication
     return this.questionsService.changeQuestionAnswerStatus(answerId, userId);
   }
-  @Get(':id/totalStats') 
+  @Get(':id/totalStats')
   async getQuestionViews(@Param('id') id: string) {
     return await this.questionsService.getQuestionViews(id);
   }
@@ -177,30 +181,34 @@ export class QuestionsController {
     return this.questionsService.getUniqueTags();
   }
   @Get('tags/list/count')
-  async getUniqueTagsCount() { 
+  async getUniqueTagsCount() {
     return this.questionsService.getUniqueTagsCount();
-  } 
+  }
   @Get('tags/:tag')
   async getQuestionsByTag(@Param('tag') tag: string): Promise<Question[]> {
     return this.questionsService.findQuestionsByTag(tag);
   }
-  
-  @Get("pagination/all")
-  async getAllQuestions(@Query() page:number, pageSize:number) {
-    
-    const paginatedQuestions = await this.questionsService.getAllQuestionsWithPaginations(page, pageSize);
-    return paginatedQuestions; 
+
+  @Get('pagination/all')
+  async getAllQuestions(@Query() page: number, pageSize: number) {
+    const paginatedQuestions =
+      await this.questionsService.getAllQuestionsWithPaginations(
+        page,
+        pageSize,
+      );
+    return paginatedQuestions;
   }
   @Get('/newest/all')
-  async getNewestQuestions( @Query('limit') limit: number = 10): Promise<Question[]> {
+  async getNewestQuestions(
+    @Query('limit') limit: number = 10,
+  ): Promise<Question[]> {
     return this.questionsService.getNewestQuestions(limit);
-  } 
+  }
   @Get('/unansweredStatus/all')
   async getAllUnansweredQuestions(): Promise<Question[]> {
     return this.questionsService.getAllUnansweredQuestions();
   }
 
-  
   @Get('/answeredStatus/all')
   async getAllAnsweredQuestions(): Promise<Question[]> {
     return this.questionsService.getAllAnsweredQuestionsAll();
@@ -208,32 +216,38 @@ export class QuestionsController {
 
   @Get('/popular/all')
   async getPopularQuestions(
-    @Query('limit') limit: number = 10
+    @Query('limit') limit: number = 10,
   ): Promise<Question[]> {
     return this.questionsService.getPopularQuestions(limit);
   }
   @Get('/upvotes/all')
   async getMostUpvotedQuestions(
-    @Query('limit') limit: number = 10
+    @Query('limit') limit: number = 10,
   ): Promise<Question[]> {
     return this.questionsService.getMostUpvotedQuestions(limit);
   }
   @Get('/downvotes/all')
   async getMostDownvotedQuestions(
-    @Query('limit') limit: number = 10
+    @Query('limit') limit: number = 10,
   ): Promise<Question[]> {
     return this.questionsService.getMostdownvotedQuestions(limit);
   }
   @Get('/answered/all')
-  async getQuestionsWithAnswers(): Promise<{ question: Question, answers: Answer[] }[]> {
+  async getQuestionsWithAnswers(): Promise<
+    { question: Question; answers: Answer[] }[]
+  > {
     return await this.questionsService.getAnswersWithTextGreaterThanZero();
   }
   @Get('/unanswered/all')
-  async getUnansweredQuestionsOrTextLengthZero(): Promise<{ question: Question }[]> {
+  async getUnansweredQuestionsOrTextLengthZero(): Promise<
+    { question: Question }[]
+  > {
     return this.questionsService.getUnansweredQuestionsOrTextLengthZero();
   }
-  @Get("pag/all")
-  async getAllQuestionwithPag(@Query() query: ExpressQuery): Promise<Question[]> {
+  @Get('pag/all')
+  async getAllQuestionwithPag(
+    @Query() query: ExpressQuery,
+  ): Promise<Question[]> {
     return this.questionsService.findAllQuestionwithPagination(query);
   }
 }

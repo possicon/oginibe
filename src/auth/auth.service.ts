@@ -208,6 +208,15 @@ export class AuthService {
     }
     return user;
   }
+
+  async findLoginUserProfile(userId: string): Promise<User> {
+    const user = await this.UserModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
   async remove(id: string): Promise<void> {
     const result = await this.UserModel.findByIdAndDelete(id);
     if (!result) {

@@ -39,7 +39,6 @@ const client = new OAuth2Client(
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-
   @Post()
   @UseInterceptors(FileInterceptor('profilePics')) // Interceptor for file handling
   async signup(
@@ -51,9 +50,11 @@ export class AuthController {
   }
   @Put(':id')
   @UseInterceptors(FileInterceptor('profilePics')) // Interceptor for file handling
-  updateProfile(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto,
-  @UploadedFile() profilePics?: Express.Multer.File, 
-) {
+  updateProfile(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() profilePics?: Express.Multer.File,
+  ) {
     return this.authService.updateProfile(id, updateUserDto);
   }
   @Post('signup')
@@ -61,7 +62,6 @@ export class AuthController {
     return this.authService.signup(signupData);
   }
 
-  
   @Post('login')
   async login(@Body() credentials: LoginDto) {
     return this.authService.login(credentials);
@@ -81,16 +81,25 @@ export class AuthController {
   async searchUser(@Query() query: any): Promise<User[]> {
     return this.authService.searchUsers(query);
   }
+  @UseGuards(UserAuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.authService.findaSingleUser(id);
   }
+
+  @UseGuards(UserAuthGuard)
+  @Get('user/profile')
+  async findUserProfile(@Req() req: any): Promise<User> {
+    const userId = req.userId; // Assuming userId is extracted from the token and stored in req.user
+    const user = await this.authService.findLoginUserProfile(userId);
+    return user;
+  }
+
   @Delete(':id')
   async remove(@Param('id') id: string) {
     await this.authService.remove(id);
     return { message: 'User Deleted successfully' };
   }
-
 
   @Post('refresh')
   async refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {
@@ -100,8 +109,6 @@ export class AuthController {
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.authService.update(id, updateUserDto);
   }
-
-
 
   @UseGuards(UserAuthGuard)
   @Patch('change-password')
