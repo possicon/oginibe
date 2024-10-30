@@ -25,12 +25,11 @@ import { AddCommentDto } from './dto/AddComment.dto';
 export class AnswersController {
   constructor(private readonly answersService: AnswersService) {}
 
-  @UseGuards(UserAuthGuard)
   @Post('sendMsg')
   async createAnswer(@Body() answerDto) {
     return this.answersService.createAnswer(answerDto);
   }
-  @UseGuards(UserAuthGuard)
+
   @Post('sendMsgImg')
   @UseInterceptors(FileInterceptor('image'))
   async create(
@@ -151,10 +150,13 @@ export class AnswersController {
   ) {
     return this.answersService.addComment(answerId, addCommentDto);
   }
+
+  @UseGuards(UserAuthGuard)
   @Post()
   async createAnswerToEmail(@Body() answerDto) {
     return this.answersService.createAnswerToEmail(answerDto);
   }
+  @UseGuards(UserAuthGuard)
   @Post('upload')
   @UseInterceptors(FileInterceptor('image'))
   async createAnswerToEmailWithImg(
@@ -162,5 +164,10 @@ export class AnswersController {
     @Body() answerDto,
   ) {
     return this.answersService.createAnswerToEmailWithImg(answerDto);
+  }
+
+  @Get('all/:userId')
+  async getAnswersByUserId(@Param('userId') userId: string) {
+    return this.answersService.getAnswersByUserId(userId);
   }
 }

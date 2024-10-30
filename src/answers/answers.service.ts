@@ -25,7 +25,9 @@ export class AnswersService {
     @InjectModel(AdminUser.name)
     private readonly AdminUserModel: Model<AdminUser>,
     @InjectModel(Question.name) private readonly questionModel: Model<Question>, // private readonly imagekit: ImageKitService, // private readonly imageKitService: ImageKitService,
-    private answerMailService: AnswerMailService,private answerMailServiceImg: AnswerMailServiceWithImg) {
+    private answerMailService: AnswerMailService,
+    private answerMailServiceImg: AnswerMailServiceWithImg,
+  ) {
     this.imagekit = new ImageKit({
       publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
       privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
@@ -282,17 +284,20 @@ export class AnswersService {
 
     // Add more filters as needed
 
-    return this.answerModel.find(filter).populate({
-      path: 'questionId',
-      populate: [
-        { path: 'categoryId' },
-        { path: 'userId', select: '-password' },
-      ],
-    })
-    .populate({
-      path: 'userId', // Populate userId and exclude password
-      select: '-password',
-    }).exec();
+    return this.answerModel
+      .find(filter)
+      .populate({
+        path: 'questionId',
+        populate: [
+          { path: 'categoryId' },
+          { path: 'userId', select: '-password' },
+        ],
+      })
+      .populate({
+        path: 'userId', // Populate userId and exclude password
+        select: '-password',
+      })
+      .exec();
   }
   async changeAnswerStatusByAdmin(
     answerId: string,
@@ -349,34 +354,35 @@ export class AnswersService {
         'This user has already given an answer to this particular question',
       );
     }
-  
+
     const createdAnswer = new this.answerModel({
       text,
       userId,
-      
 
       questionId,
     });
     const result = await createdAnswer.save();
-    const question:any = await this.questionModel.findById(questionId).populate({
-      path: 'userId',
-      select: 'email name', // Populate only necessary fields
-    });
+    const question: any = await this.questionModel
+      .findById(questionId)
+      .populate({
+        path: 'userId',
+        select: 'email name', // Populate only necessary fields
+      });
     if (!question) {
       throw new BadRequestException('Question not found');
     }
-  
+
     // Check if email needs to be sent
     if (question.sendAnswerEmail === true) {
       const enquirerEmail = question.userId.email;
       const questionTitle = question.title; // Assuming there's a `title` field in the question
-  
+
       // Send answer via email
       try {
         await this.answerMailService.sendAnswerToEnquirer(
           enquirerEmail,
           questionTitle,
-          text
+          text,
         );
       } catch (error) {
         throw new Error('Failed to send email');
@@ -391,7 +397,7 @@ export class AnswersService {
     };
   }
   async createAnswerToEmailWithImg(createAnswerDto: CreateAnswerDto) {
-    const { text, questionId, imageUrl,userId } = createAnswerDto;
+    const { text, questionId, imageUrl, userId } = createAnswerDto;
     const nameExits = await this.answerModel.findOne({
       text,
       userId,
@@ -413,24 +419,26 @@ export class AnswersService {
     const createdAnswer = new this.answerModel({
       text,
       userId,
-      
+
       imageUrl: imageUrls,
       questionId,
     });
     const result = await createdAnswer.save();
-    const question:any = await this.questionModel.findById(questionId).populate({
-      path: 'userId',
-      select: 'email name', // Populate only necessary fields
-    });
+    const question: any = await this.questionModel
+      .findById(questionId)
+      .populate({
+        path: 'userId',
+        select: 'email name', // Populate only necessary fields
+      });
     if (!question) {
       throw new BadRequestException('Question not found');
     }
-  
+
     // Check if email needs to be sent
     if (question.sendAnswerEmail === true) {
       const enquirerEmail = question.userId.email;
       const questionTitle = question.title; // Assuming there's a `title` field in the question
-  
+
       // Send answer via email
       try {
         await this.answerMailServiceImg.sendAnswerToEnquirerWithImg(
@@ -453,5 +461,37 @@ export class AnswersService {
     };
   }
 
-  
+  async getAnswersByUserId(userId: string): Promise<Answer[]> {
+    const answer = await this.answerModel
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'questionId',
+        populate: [
+          { path: 'categoryId' },
+          { path: 'userId', select: '-password' },
+        ],
+      })
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .populate({
+        path: 'upvotes',
+        populate: [, { path: 'userId', select: '-password' }],
+      })
+      .populate('downvotes', 'firstName lastName email')
+      .populate({
+        path: 'comments', // Populate the userId inside the upvotes array
+        populate: {
+          path: 'userId', // Populate the 'userId' field within each comment
+          select: 'firstName lastName email', // Only retrieve the selected fields
+        },
+      })
+      .exec();
+    if (!answer) {
+      throw new NotFoundException('User not found');
+    }
+    return answer;
+  }
 }

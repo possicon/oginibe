@@ -250,4 +250,9 @@ export class QuestionsController {
   ): Promise<Question[]> {
     return this.questionsService.findAllQuestionwithPagination(query);
   }
+
+  @Get('all/:userId')
+  async getQuestionsByUserId(@Param('userId') userId: string) {
+    return this.questionsService.getQuestionsByUserId(userId);
+  }
 }

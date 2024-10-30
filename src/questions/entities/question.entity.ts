@@ -6,7 +6,7 @@ export class Question extends Document {
   @Prop({ required: true })
   title: string;
 
-  @Prop({ required: true, minlength: 6, maxlength: 100 })
+  @Prop({ required: true, minlength: 6, maxlength: 200 })
   description: string;
 
   @Prop({ type: Types.ObjectId, ref: 'QuestionsCategory', required: true })
@@ -17,7 +17,7 @@ export class Question extends Document {
 
   @Prop({ required: false, default: 'UnAnswered' })
   answerStatus: string;
-   
+
   @Prop({ type: [String], required: false })
   imageUrl: string[];
 
@@ -36,7 +36,7 @@ export class Question extends Document {
   @Prop({ type: [String], default: [] })
   views: string[];
 
-  @Prop({ required: false, default: false})
+  @Prop({ required: false, default: false })
   sendAnswerEmail: boolean;
 
   @Prop({ type: Date, default: Date.now })

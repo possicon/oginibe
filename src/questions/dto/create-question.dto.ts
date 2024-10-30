@@ -15,7 +15,7 @@ export class CreateQuestionDto {
   @IsNotEmpty()
   @IsString()
   @MinLength(6)
-  @MaxLength(100)
+  @MaxLength(200)
   description: string;
 
   @IsNotEmpty()
@@ -32,7 +32,7 @@ export class CreateQuestionDto {
   status?: string;
 
   @IsOptional()
-  sendAnswerEmail?:string;
+  sendAnswerEmail?: string;
 
   @IsOptional()
   @IsArray() // Ensure it's a string
@@ -43,6 +43,5 @@ export class CreateQuestionDto {
   downvotes?: string[];
 
   @IsOptional()
-  answerStatus?:string;
-  
+  answerStatus?: string;
 }

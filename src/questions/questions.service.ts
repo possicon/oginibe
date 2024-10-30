@@ -659,4 +659,23 @@ export class QuestionsService {
       })
       .exec();
   }
+  async getQuestionsByUserId(userId: string): Promise<Question[]> {
+    const question = await this.QuestionModel.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .populate({
+        path: 'upvotes',
+        populate: [, { path: 'userId', select: '-password' }],
+      })
+      .populate('downvotes', 'firstName lastName email')
+
+      .exec();
+    if (!question) {
+      throw new NotFoundException('User not found');
+    }
+    return question;
+  }
 }
