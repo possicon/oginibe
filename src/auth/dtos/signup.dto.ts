@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
@@ -15,6 +16,7 @@ export class SignupDto {
   lastName: string;
 
   @IsEmail()
+  @Transform(({ value }) => value.toLowerCase()) // Transform email to lowercase
   email: string;
 
   // isAdmin: boolean;
@@ -24,7 +26,6 @@ export class SignupDto {
 
   @IsOptional()
   profilePics: string;
-  
 
   @IsOptional()
   facebookId: string;
