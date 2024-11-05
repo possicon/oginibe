@@ -6,7 +6,7 @@ export class Question extends Document {
   @Prop({ required: true })
   title: string;
 
-  @Prop({ required: true, minlength: 6, maxlength: 200 })
+  @Prop({ required: true, minlength: 6, maxlength: 1500 })
   description: string;
 
   @Prop({ type: Types.ObjectId, ref: 'QuestionsCategory', required: true })
