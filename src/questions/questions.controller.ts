@@ -13,6 +13,7 @@ import {
   NotFoundException,
   Res,
   Query,
+  ForbiddenException,
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
@@ -78,11 +79,20 @@ export class QuestionsController {
     return this.questionsService.update(id, updateQuestionDto);
   }
 
+  @UseGuards(UserAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.questionsService.remove(id);
-  }
+  async remove(@Param('id') id: string, @Req() req) {
+    const questionUserId = await this.questionsService.findById(id);
 
+    if (questionUserId.userId.toString() !== req.userId) {
+      throw new ForbiddenException(
+        'Only the Inquirer is permitted to Delete this Question',
+      );
+    }
+
+    await this.questionsService.remove(id);
+    return { message: 'Question deleted successfully' };
+  }
   @UseGuards(UserAuthGuard)
   @Patch(':id/statusUpdate')
   async updateQuestionStatus(
@@ -267,5 +277,12 @@ export class QuestionsController {
   @Get('all/:userId')
   async getQuestionsByUserId(@Param('userId') userId: string) {
     return this.questionsService.getQuestionsByUserId(userId);
+  }
+  @Get(':userId/counts/all')
+  async countAllQuestionsByUserId(
+    @Param('userId') userId: string,
+  ): Promise<{ total: number }> {
+    const total = await this.questionsService.getQuestionsCountByUserId(userId);
+    return { total };
   }
 }

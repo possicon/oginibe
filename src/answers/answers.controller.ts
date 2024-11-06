@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UseGuards,
   Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AnswersService } from './answers.service';
 import { CreateAnswerDto } from './dto/create-answer.dto';
@@ -126,9 +127,19 @@ export class AnswersController {
     return this.answersService.update(+id, updateAnswerDto);
   }
 
+  @UseGuards(UserAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.answersService.remove(+id);
+  async remove(@Param('id') id: string, @Req() req) {
+    const answerUserId = await this.answersService.findById(id);
+
+    if (answerUserId.userId.toString() !== req.userId) {
+      throw new ForbiddenException(
+        'Only the Responder is permitted to Delete this Answer',
+      );
+    }
+
+    await this.answersService.remove(id);
+    return { message: 'Answer deleted successfully' };
   }
   @UseGuards(UserAuthGuard)
   @Patch(':id/status')
@@ -180,5 +191,12 @@ export class AnswersController {
   @Get('all/:userId')
   async getAnswersByUserId(@Param('userId') userId: string) {
     return this.answersService.getAnswersByUserId(userId);
+  }
+  @Get(':userId/counts/all')
+  async countAllAnswersCountByUserId(
+    @Param('userId') userId: string,
+  ): Promise<{ total: number }> {
+    const total = await this.answersService.getAnswersCountByUserId(userId);
+    return { total };
   }
 }

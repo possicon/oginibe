@@ -136,6 +136,12 @@ export class AnswersService {
       throw new NotFoundException('Answer not found');
     }
   }
+  async remove(id: string): Promise<void> {
+    const result = await this.answerModel.findByIdAndDelete(id);
+    if (!result) {
+      throw new NotFoundException('Answer not found');
+    }
+  }
 
   async upvoteAnswer(
     answerId: Types.ObjectId,
@@ -284,6 +290,13 @@ export class AnswersService {
     }
     return answer;
   }
+  async findById(id: string): Promise<Answer> {
+    const answer = await this.answerModel.findById(id).exec();
+    if (!answer) {
+      throw new NotFoundException('Answer not found');
+    }
+    return answer;
+  }
   async countAllAnswers(): Promise<number> {
     return this.answerModel.countDocuments().exec();
   }
@@ -340,9 +353,6 @@ export class AnswersService {
     return `This action updates a #${id} answer`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} answer`;
-  }
   async addComment(answerId: string, addCommentDto: AddCommentDto) {
     const answer = await this.answerModel.findById(answerId);
     if (!answer) {
@@ -509,5 +519,8 @@ export class AnswersService {
       throw new NotFoundException('User not found');
     }
     return answer;
+  }
+  async getAnswersCountByUserId(userId: string): Promise<number> {
+    return this.answerModel.countDocuments({ userId }).exec();
   }
 }

@@ -159,6 +159,13 @@ export class QuestionsService {
     }
     return question;
   }
+  async findById(id: string): Promise<Question> {
+    const question = await this.QuestionModel.findById(id).exec();
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+    return question;
+  }
   async countAllQuestions(): Promise<number> {
     return this.QuestionModel.countDocuments().exec();
   }
@@ -574,6 +581,24 @@ export class QuestionsService {
       .exec();
     return books;
   }
+  async getMostUpvotedQuestionswithPag(
+    query: Query,
+    limit: number = 10,
+  ): Promise<Question[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
+    return this.QuestionModel.find()
+      .sort({ upvotes: -1 }) // Sort by upvotes in descending order
+      .limit(resPerPage)
+      .skip(skip)
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .exec(); // Execute the query
+  }
   async getAnswersWithTextGreaterThanZero(): Promise<
     { question: Question; answers: Answer[] }[]
   > {
@@ -696,5 +721,8 @@ export class QuestionsService {
       throw new NotFoundException('User not found');
     }
     return question;
+  }
+  async getQuestionsCountByUserId(userId: string): Promise<number> {
+    return this.QuestionModel.countDocuments({ userId }).exec();
   }
 }
