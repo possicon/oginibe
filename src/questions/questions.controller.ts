@@ -130,12 +130,25 @@ export class QuestionsController {
   }
   @Patch(':questionId/unvote')
   @UseGuards(UserAuthGuard)
-  async unvoteAnswer(
+  async unvoteQuestion(
     @Param('questionId') questionId: string,
     @Body('userId') userId: string,
     // @UserId() userId: Types.ObjectId, // assuming you have a decorator to get userId from JWT
   ) {
     return this.questionsService.unvoteQuestion(
+      new Types.ObjectId(questionId),
+      new Types.ObjectId(userId),
+    );
+  }
+
+  @Patch(':questionId/unvote/downvote')
+  @UseGuards(UserAuthGuard)
+  async unvoteDownvoteQuestion(
+    @Param('questionId') questionId: string,
+    @Body('userId') userId: string,
+    // @UserId() userId: Types.ObjectId, // assuming you have a decorator to get userId from JWT
+  ) {
+    return this.questionsService.unvoteDownvoteQuestion(
       new Types.ObjectId(questionId),
       new Types.ObjectId(userId),
     );

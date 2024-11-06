@@ -279,6 +279,7 @@ export class QuestionsService {
     // Save and return the updated answer
     return question.save();
   }
+
   async downvoteQuestion(
     questionId: Types.ObjectId,
     userId: Types.ObjectId,
@@ -297,6 +298,24 @@ export class QuestionsService {
       );
     }
 
+    return question.save();
+  }
+  async unvoteDownvoteQuestion(
+    questionId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ): Promise<Question> {
+    const question = await this.QuestionModel.findById(questionId);
+    if (!question) {
+      throw new NotFoundException('Answer not found');
+    }
+    // Remove user from upvotes if they have upvoted
+    if (question.downvotes.includes(userId)) {
+      question.downvotes = question.downvotes.filter(
+        (id) => !id.equals(userId),
+      );
+    }
+
+    // Save and return the updated answer
     return question.save();
   }
   async changeQuestionAnswerStatus(

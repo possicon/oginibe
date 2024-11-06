@@ -84,7 +84,18 @@ export class AnswersController {
     const userObjectId = new Types.ObjectId(userId);
     return this.answersService.downvoteAnswer(objectId, userObjectId);
   }
-
+  @Patch(':answerId/unvote/downvote')
+  @UseGuards(UserAuthGuard)
+  async unvoteDownvoteAnswer(
+    @Param('answerId') answerId: string,
+    @Body('userId') userId: string,
+    // @UserId() userId: Types.ObjectId, // assuming you have a decorator to get userId from JWT
+  ) {
+    return this.answersService.unvoteDownvoteAnswer(
+      new Types.ObjectId(answerId),
+      new Types.ObjectId(userId),
+    );
+  }
   @Patch(':id/acknowledge')
   async acknowledgeAnswer(
     @Param('id') id: string,

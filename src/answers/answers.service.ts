@@ -190,6 +190,22 @@ export class AnswersService {
 
     return answer.save();
   }
+  async unvoteDownvoteAnswer(
+    answerId: Types.ObjectId,
+    userId: Types.ObjectId,
+  ): Promise<Answer> {
+    const answer = await this.answerModel.findById(answerId);
+    if (!answer) {
+      throw new NotFoundException('Answer not found');
+    }
+    // Remove user from upvotes if they have upvoted
+    if (answer.downvotes.includes(userId)) {
+      answer.downvotes = answer.downvotes.filter((id) => !id.equals(userId));
+    }
+
+    // Save and return the updated answer
+    return answer.save();
+  }
   async changeAnswerStatus(answerId: string, userId: string): Promise<Answer> {
     const answer = await this.answerModel.findById(answerId);
     if (!answer) {
