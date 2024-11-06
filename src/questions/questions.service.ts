@@ -489,15 +489,20 @@ export class QuestionsService {
       .exec();
     return { products, page, pages: Math.ceil(count / pageSize) };
   }
-  async getNewestQuestions(limit: number = 10): Promise<Question[]> {
+  async getNewestQuestions(query: Query): Promise<Question[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
     return this.QuestionModel.find()
       .sort({ createdAt: -1 })
+      .limit(resPerPage)
+      .skip(skip)
       .populate('categoryId')
       .populate({
         path: 'userId',
         select: '-password', // Exclude the password field
       })
-      .limit(limit) // Limit the number of results
+
       .exec();
   }
   // Fetch all unanswered questions
@@ -531,16 +536,26 @@ export class QuestionsService {
       })
       .exec();
   }
-  async getPopularQuestions(limit: number = 10): Promise<Question[]> {
-    return this.QuestionModel.find()
-      .sort({ views: -1 }) // Sort questions by the number of views (descending)
-      .limit(limit) // Limit the number of results
-      .populate('categoryId')
-      .populate({
-        path: 'userId',
-        select: '-password', // Exclude the password field
-      })
-      .exec();
+  async getPopularQuestions(
+    query: Query,
+    // limit: number = 10
+  ): Promise<Question[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
+    return (
+      this.QuestionModel.find()
+        .sort({ views: -1 }) // Sort questions by the number of views (descending)
+        // .limit(limit) // Limit the number of results
+        .limit(resPerPage)
+        .skip(skip)
+        .populate('categoryId')
+        .populate({
+          path: 'userId',
+          select: '-password', // Exclude the password field
+        })
+        .exec()
+    );
   }
   async getMostUpvotedQuestions(limit: number = 10): Promise<Question[]> {
     return this.QuestionModel.find()
@@ -565,6 +580,21 @@ export class QuestionsService {
       })
       .exec();
   }
+  async getMostdownvotedQuestionswithPag(query: Query): Promise<Question[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
+    return this.QuestionModel.find()
+      .sort({ downvotes: -1 }) // Sort by upvotes in descending order
+      .limit(resPerPage)
+      .skip(skip)
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .exec(); // Execute the query
+  }
   async findAllQuestionwithPagination(query: Query): Promise<Question[]> {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
@@ -581,10 +611,7 @@ export class QuestionsService {
       .exec();
     return books;
   }
-  async getMostUpvotedQuestionswithPag(
-    query: Query,
-    limit: number = 10,
-  ): Promise<Question[]> {
+  async getMostUpvotedQuestionswithPag(query: Query): Promise<Question[]> {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
@@ -599,12 +626,17 @@ export class QuestionsService {
       })
       .exec(); // Execute the query
   }
-  async getAnswersWithTextGreaterThanZero(): Promise<
-    { question: Question; answers: Answer[] }[]
-  > {
+  async getAnswersWithTextGreaterThanZero(
+    query: Query,
+  ): Promise<{ question: Question; answers: Answer[] }[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
     // Fetch all questions
     const questions = await this.QuestionModel.find()
       .sort({ createdAt: -1 })
+      .limit(resPerPage)
+      .skip(skip)
       .populate('categoryId')
       .populate({
         path: 'userId',
@@ -642,12 +674,17 @@ export class QuestionsService {
     // Return the result
     return result;
   }
-  async getUnansweredQuestionsOrTextLengthZero(): Promise<
-    { question: Question }[]
-  > {
+  async getUnansweredQuestionsOrTextLengthZero(
+    query: Query,
+  ): Promise<{ question: Question }[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
     // Fetch all questions
     const questions = await this.QuestionModel.find()
       .sort({ createdAt: -1 })
+      .limit(resPerPage)
+      .skip(skip)
       .populate('categoryId')
       .populate({
         path: 'userId',
@@ -724,5 +761,16 @@ export class QuestionsService {
   }
   async getQuestionsCountByUserId(userId: string): Promise<number> {
     return this.QuestionModel.countDocuments({ userId }).exec();
+  }
+  async getQuestionsandAnswerCountByUserId(
+    userId: string,
+  ): Promise<{ questionCount: number; answerCount: number }> {
+    const questionCount = await this.QuestionModel.countDocuments({
+      userId,
+    }).exec();
+    const answerCount = await this.answerModel
+      .countDocuments({ userId })
+      .exec();
+    return { questionCount, answerCount };
   }
 }

@@ -222,10 +222,8 @@ export class QuestionsController {
     return paginatedQuestions;
   }
   @Get('/newest/all')
-  async getNewestQuestions(
-    @Query('limit') limit: number = 10,
-  ): Promise<Question[]> {
-    return this.questionsService.getNewestQuestions(limit);
+  async getNewestQuestions(@Query() query: ExpressQuery): Promise<Question[]> {
+    return this.questionsService.getNewestQuestions(query);
   }
   @Get('/unansweredStatus/all')
   async getAllUnansweredQuestions(): Promise<Question[]> {
@@ -239,33 +237,35 @@ export class QuestionsController {
 
   @Get('/popular/all')
   async getPopularQuestions(
-    @Query('limit') limit: number = 10,
+    @Query() query: ExpressQuery,
+    // @Query('limit') limit: number = 10,
   ): Promise<Question[]> {
-    return this.questionsService.getPopularQuestions(limit);
+    return this.questionsService.getPopularQuestions(query);
   }
   @Get('/upvotes/all')
   async getMostUpvotedQuestions(
-    @Query('limit') limit: number = 10,
+    @Query() query: ExpressQuery,
   ): Promise<Question[]> {
-    return this.questionsService.getMostUpvotedQuestions(limit);
+    return this.questionsService.getMostUpvotedQuestionswithPag(query);
   }
   @Get('/downvotes/all')
   async getMostDownvotedQuestions(
-    @Query('limit') limit: number = 10,
+    // @Query('limit') limit: number = 10,
+    @Query() query: ExpressQuery,
   ): Promise<Question[]> {
-    return this.questionsService.getMostdownvotedQuestions(limit);
+    return this.questionsService.getMostdownvotedQuestionswithPag(query);
   }
   @Get('/answered/all')
-  async getQuestionsWithAnswers(): Promise<
-    { question: Question; answers: Answer[] }[]
-  > {
-    return await this.questionsService.getAnswersWithTextGreaterThanZero();
+  async getQuestionsWithAnswers(
+    @Query() query: ExpressQuery,
+  ): Promise<{ question: Question; answers: Answer[] }[]> {
+    return await this.questionsService.getAnswersWithTextGreaterThanZero(query);
   }
   @Get('/unanswered/all')
-  async getUnansweredQuestionsOrTextLengthZero(): Promise<
-    { question: Question }[]
-  > {
-    return this.questionsService.getUnansweredQuestionsOrTextLengthZero();
+  async getUnansweredQuestionsOrTextLengthZero(
+    @Query() query: ExpressQuery,
+  ): Promise<{ question: Question }[]> {
+    return this.questionsService.getUnansweredQuestionsOrTextLengthZero(query);
   }
   @Get('pag/all')
   async getAllQuestionwithPag(
@@ -278,11 +278,20 @@ export class QuestionsController {
   async getQuestionsByUserId(@Param('userId') userId: string) {
     return this.questionsService.getQuestionsByUserId(userId);
   }
-  @Get(':userId/counts/all')
+  @Get(':userId/county/all')
   async countAllQuestionsByUserId(
     @Param('userId') userId: string,
   ): Promise<{ total: number }> {
     const total = await this.questionsService.getQuestionsCountByUserId(userId);
     return { total };
+  }
+  @Get(':userId/counts/all')
+  async countAllQuestionsandAnswersByUserId(
+    @Param('userId') userId: string,
+  ): Promise<{ questionCount: number; answerCount: number }> {
+    const { questionCount, answerCount } =
+      await this.questionsService.getQuestionsandAnswerCountByUserId(userId);
+    // const total = questionCount + answerCount;
+    return { questionCount, answerCount };
   }
 }
