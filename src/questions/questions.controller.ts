@@ -35,12 +35,12 @@ export class QuestionsController {
     private readonly questionsService: QuestionsService, // private readonly imageKitService: ImageKitService, // private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  @UseGuards(UserAuthGuard)
+  // @UseGuards(UserAuthGuard)
   @Post()
   async createQuestion(@Body() createQuestionDto: CreateQuestionDto) {
     return this.questionsService.createQuestion(createQuestionDto);
   }
-  @UseGuards(UserAuthGuard)
+  // @UseGuards(UserAuthGuard)
   @Post('upload')
   @UseInterceptors(FileInterceptor('image'))
   async create(
@@ -224,15 +224,6 @@ export class QuestionsController {
   @Get('/newest/all')
   async getNewestQuestions(@Query() query: ExpressQuery): Promise<Question[]> {
     return this.questionsService.getNewestQuestions(query);
-  }
-  @Get('/unansweredStatus/all')
-  async getAllUnansweredQuestions(): Promise<Question[]> {
-    return this.questionsService.getAllUnansweredQuestions();
-  }
-
-  @Get('/answeredStatus/all')
-  async getAllAnsweredQuestions(): Promise<Question[]> {
-    return this.questionsService.getAllAnsweredQuestionsAll();
   }
 
   @Get('/popular/all')

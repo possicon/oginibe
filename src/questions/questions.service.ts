@@ -505,37 +505,9 @@ export class QuestionsService {
 
       .exec();
   }
-  // Fetch all unanswered questions
-  async getAllUnansweredQuestions(): Promise<Question[]> {
-    return this.QuestionModel.find({ answerStatus: 'UnAnswered' })
-      .populate('categoryId')
-      .populate({
-        path: 'userId',
-        select: '-password', // Exclude the password field
-      })
-      .exec();
-  }
 
   // Fetch all answered questions
-  async getAllAnsweredQuestions(): Promise<Question[]> {
-    return this.QuestionModel.find({ answerStatus: { $ne: 'UnAnswered' } })
-      .populate('categoryId')
-      .populate({
-        path: 'userId',
-        select: '-password', // Exclude the password field
-      })
-      .exec();
-  }
-  // Fetch all answered questions
-  async getAllAnsweredQuestionsAll(): Promise<Question[]> {
-    return this.QuestionModel.find({ answerStatus: 'Answered' })
-      .populate('categoryId')
-      .populate({
-        path: 'userId',
-        select: '-password', // Exclude the password field
-      })
-      .exec();
-  }
+
   async getPopularQuestions(
     query: Query,
     // limit: number = 10
