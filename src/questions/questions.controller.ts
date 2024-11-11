@@ -35,12 +35,12 @@ export class QuestionsController {
     private readonly questionsService: QuestionsService, // private readonly imageKitService: ImageKitService, // private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  // @UseGuards(UserAuthGuard)
+  @UseGuards(UserAuthGuard)
   @Post()
   async createQuestion(@Body() createQuestionDto: CreateQuestionDto) {
     return this.questionsService.createQuestion(createQuestionDto);
   }
-  // @UseGuards(UserAuthGuard)
+  @UseGuards(UserAuthGuard)
   @Post('upload')
   @UseInterceptors(FileInterceptor('image'))
   async create(
