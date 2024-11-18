@@ -12,8 +12,8 @@ export class MailService {
       // host: 'smtp.ethereal.email',
       // port: 587,
       auth: {
-        user: 'djnchrys@gmail.com',
-        pass: 'mictdtqklnuerfkg',
+        user: process.env.Mail_Delivery,
+        pass: process.env.Mail_Passcode,
       },
     });
   }
