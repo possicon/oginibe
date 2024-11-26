@@ -19,9 +19,9 @@ export class MailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string) {
-    const resetLink = `https://ogini-dev.vercel.app/reset-password?token=${token}`;
+    const resetLink = `https://ogini.com/reset-password?token=${token}`;
     const mailOptions = {
-      from: 'Oginibe Auth-backend service',
+      from: 'Ogini App <noreply@yourapp.com>',
       to: to,
       subject: 'Password Reset Request',
       html: `<p>You requested a password reset. Click on the link below to reset your password:</p><p><a href="${resetLink}">Reset Password</a></p>`,

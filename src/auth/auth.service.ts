@@ -337,8 +337,7 @@ export class AuthService {
     }
 
     return {
-      message:
-        'You are a registered User, please check your email for password reset',
+      message: 'Dear User, Please kindly check your email for password reset',
     };
   }
 
