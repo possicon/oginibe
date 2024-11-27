@@ -34,6 +34,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
+  process.env.IOS_GOOGLE_CLIENT_ID,
 );
 @Controller('auth')
 export class AuthController {
@@ -145,7 +146,8 @@ export class AuthController {
   ): Promise<any> {
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience:
+        process.env.GOOGLE_CLIENT_ID || process.env.IOS_GOOGLE_CLIENT_ID,
     });
 
     const payload = ticket.getPayload();
