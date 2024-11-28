@@ -14,6 +14,8 @@ import {
   Res,
   Query,
   ForbiddenException,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
@@ -70,7 +72,10 @@ export class QuestionsController {
   async findByTitle(@Param('title') title: string): Promise<Question> {
     return this.questionsService.findByTitle(title);
   }
-
+  @Get('details/:slug')
+  async getQuestionBySlug(@Param('slug') slug: string) {
+    return await this.questionsService.getQuestionBySlug(slug);
+  }
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -284,5 +289,12 @@ export class QuestionsController {
       await this.questionsService.getQuestionsandAnswerCountByUserId(userId);
     // const total = questionCount + answerCount;
     return { questionCount, answerCount };
+  }
+
+  @Post('update-missing-slugs')
+  @HttpCode(HttpStatus.OK)
+  async updateMissingSlugs() {
+    const message = await this.questionsService.updateMissingSlugs();
+    return { message };
   }
 }

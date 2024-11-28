@@ -173,4 +173,9 @@ export class AuthController {
     // Facebook will redirect here after a successful login
     return req.user;
   }
+  @Get('counts/all')
+  async countAllUser(): Promise<{ total: number }> {
+    const total = await this.authService.countAllUser();
+    return { total };
+  }
 }

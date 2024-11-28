@@ -14,7 +14,7 @@ describe('NewsletterController', () => {
     controller = module.get<NewsletterController>(NewsletterController);
   });
 
-  it('should be defined', () => {
+  it('should be defined! ', () => {
     expect(controller).toBeDefined();
   });
 });

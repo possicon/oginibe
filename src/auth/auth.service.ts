@@ -507,4 +507,7 @@ export class AuthService {
 
     return this.UserModel.find(filter).exec();
   }
+  async countAllUser(): Promise<number> {
+    return this.UserModel.countDocuments().exec();
+  }
 }

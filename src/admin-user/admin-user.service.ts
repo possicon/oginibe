@@ -13,12 +13,24 @@ import { User } from 'src/auth/schemas/user.schema';
 import { AdminUser } from './entities/admin-user.entity';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { AssignRoleDto } from './dto/asign-roles.dto';
-
+import { LoginDto } from 'src/auth/dtos/login.dto';
+import * as bcrypt from 'bcrypt';
+import { RefreshToken } from 'src/auth/schemas/refresh-token.schema';
+import { v4 as uuidv4 } from 'uuid';
+import { JwtService } from '@nestjs/jwt';
+import { Answer } from 'src/answers/entities/answer.entity';
+import { Question } from 'src/questions/entities/question.entity';
 @Injectable()
 export class AdminUserService {
   constructor(
     @InjectModel(AdminUser.name)
     private readonly AdminUserModel: Model<AdminUser>,
+    @InjectModel(User.name) private UserModel: Model<User>,
+    @InjectModel(RefreshToken.name)
+    private RefreshTokenModel: Model<RefreshToken>,
+    @InjectModel(Answer.name) private readonly AnswerModel: Model<Answer>,
+    @InjectModel(Question.name) private readonly QuestionModel: Model<Question>,
+    private jwtService: JwtService,
   ) {}
 
   async makeFirstAdminUser(userId: Types.ObjectId): Promise<AdminUser> {
@@ -34,6 +46,75 @@ export class AdminUserService {
     });
 
     return adminUser.save();
+  }
+  async adminLogin(credentials: LoginDto) {
+    const { email, password } = credentials;
+
+    // Find the admin user by email
+    const user = await this.UserModel.findOne({ email });
+    if (!user) {
+      throw new UnauthorizedException('User Not found');
+    }
+
+    // Ensure the referenced user exists and matches the provided credentials
+    const adminUser = await this.AdminUserModel.findOne({
+      userId: user._id,
+      isAdmin: true,
+    });
+    if (!adminUser) {
+      throw new UnauthorizedException('Permision Denied');
+    }
+
+    // Compare the entered password with the stored password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Generate JWT tokens for the admin
+    const tokens = await this.generateUserTokens(user._id);
+    return {
+      ...tokens,
+      userId: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: adminUser.role,
+      isAdmin: adminUser.isAdmin,
+    };
+  }
+  async generateUserTokens(userId) {
+    const accessToken = this.jwtService.sign({ userId }, { expiresIn: '10h' });
+    const refreshToken = uuidv4();
+
+    await this.storeRefreshToken(refreshToken, userId);
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+  async storeRefreshToken(token: string, userId: string) {
+    // Calculate expiry date 3 days from now
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 3);
+
+    await this.RefreshTokenModel.updateOne(
+      { userId },
+      { $set: { expiryDate, token } },
+      {
+        upsert: true,
+      },
+    );
+  }
+  async getAdminByUserId(userId: Types.ObjectId): Promise<AdminUser> {
+    const adminuser = await this.AdminUserModel.findOne({
+      userId: new Types.ObjectId(userId),
+      isAdmin: true,
+    }).exec();
+    if (!adminuser) {
+      throw new NotFoundException('Only admins can perform this action');
+    }
+    return adminuser;
   }
   async findAll(): Promise<AdminUser[]> {
     return this.AdminUserModel.find()
@@ -144,11 +225,7 @@ export class AdminUserService {
     return adminUser;
   }
 
-  async makeUserAdmin(
-    userId: Types.ObjectId,
-
-    isAdmin: boolean,
-  ): Promise<AdminUser> {
+  async makeUserAdmin(userId: Types.ObjectId): Promise<AdminUser> {
     const userAlreadyAdmin = await this.AdminUserModel.findOne({
       userId,
     });
@@ -158,7 +235,7 @@ export class AdminUserService {
     }
     const adminUser = new this.AdminUserModel({
       userId: userId,
-      isAdmin,
+      isAdmin: true,
     });
 
     return adminUser.save();
@@ -257,5 +334,31 @@ export class AdminUserService {
     // Add more filters as needed
 
     return this.AdminUserModel.find(filter).exec();
+  }
+
+  async countAllAdmin(): Promise<number> {
+    return this.AdminUserModel.countDocuments({ isAdmin: true }).exec();
+  }
+
+  async countAll(): Promise<{
+    totalQuestions: number;
+    totalUsers: number;
+    totalAnswers: number;
+    totalAdmins: number;
+  }> {
+    const [totalQuestions, totalUsers, totalAnswers, totalAdmins] =
+      await Promise.all([
+        this.QuestionModel.countDocuments().exec(),
+        this.UserModel.countDocuments().exec(),
+        this.AnswerModel.countDocuments().exec(),
+        this.AdminUserModel.countDocuments({ isAdmin: true }).exec(),
+      ]);
+
+    return {
+      totalQuestions,
+      totalUsers,
+      totalAnswers,
+      totalAdmins,
+    };
   }
 }

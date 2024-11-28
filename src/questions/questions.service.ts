@@ -15,6 +15,7 @@ import { UpdateQuery } from 'mongoose';
 import { AdminUser } from 'src/admin-user/entities/admin-user.entity';
 import { DeleteImageDto } from './dto/deletImage.dto';
 import { User } from 'src/auth/schemas/user.schema';
+import slugify from 'slugify';
 import { Query } from 'express-serve-static-core';
 import { Answer } from 'src/answers/entities/answer.entity';
 // import { ImageKitService } from './services/imagekit';
@@ -88,6 +89,7 @@ export class QuestionsService {
       imageUrl: result.imageUrl,
       tags: result.tags,
       userId: result.userId,
+      slug: result.slug,
     };
   }
   async createQuestion(createQuestionDto: CreateQuestionDto) {
@@ -133,6 +135,7 @@ export class QuestionsService {
       imageUrl: result.imageUrl,
       tags: result.tags,
       userId: result.userId,
+      slug: result.slug,
     };
   }
   async findAll(): Promise<Question[]> {
@@ -163,6 +166,18 @@ export class QuestionsService {
     const question = await this.QuestionModel.findById(id).exec();
     if (!question) {
       throw new NotFoundException('Question not found');
+    }
+    return question;
+  }
+  async getQuestionBySlug(slug: string) {
+    const question = await this.QuestionModel.findOne({ slug })
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      });
+    if (!question) {
+      throw new NotFoundException(`Question with slug ${slug} not found`);
     }
     return question;
   }
@@ -744,5 +759,27 @@ export class QuestionsService {
       .countDocuments({ userId })
       .exec();
     return { questionCount, answerCount };
+  }
+
+  async updateMissingSlugs(): Promise<string> {
+    const questions = await this.QuestionModel.find({
+      slug: { $exists: false },
+    });
+
+    for (const question of questions) {
+      const baseSlug = slugify(question.title, { lower: true, strict: true });
+      let uniqueSlug = baseSlug;
+      let counter = 1;
+
+      while (await this.QuestionModel.findOne({ slug: uniqueSlug })) {
+        uniqueSlug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+
+      question.slug = uniqueSlug;
+      await question.save();
+    }
+
+    return `Slugs updated for ${questions.length} questions.`;
   }
 }
