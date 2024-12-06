@@ -139,7 +139,7 @@ export class QuestionsService {
     };
   }
   async findAll(): Promise<Question[]> {
-    return this.QuestionModel.find()
+    return this.QuestionModel.find({ status: 'Enable' })
       .sort({ createdAt: -1 })
       .populate('categoryId')
       .populate({
@@ -464,13 +464,13 @@ export class QuestionsService {
   }
 
   async findQuestionsByTag(tag: string): Promise<Question[]> {
-    return this.QuestionModel.find({ tags: tag }).exec();
+    return this.QuestionModel.find({ tags: tag, status: 'Enable' }).exec();
   }
   async getAllQuestionsWithPagination(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
 
     const [questions, totalCount] = await Promise.all([
-      this.QuestionModel.find()
+      this.QuestionModel.find({ status: 'Enable' })
         .populate('categoryId', 'name') // If you want to populate the category
         .populate('userId', 'username') // If you want to populate the user info
         .skip(skip)
@@ -492,7 +492,7 @@ export class QuestionsService {
   ) {
     const count = await this.QuestionModel.countDocuments();
 
-    const products = await this.QuestionModel.find()
+    const products = await this.QuestionModel.find({ status: 'Enable' })
       .sort({ createdAt: -1 })
       .limit(pageSize)
       .skip(pageSize * (page - 1))
@@ -508,7 +508,7 @@ export class QuestionsService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    return this.QuestionModel.find()
+    return this.QuestionModel.find({ status: 'Enable' })
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
@@ -531,7 +531,7 @@ export class QuestionsService {
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
     return (
-      this.QuestionModel.find()
+      this.QuestionModel.find({ status: 'Enable' })
         .sort({ views: -1 }) // Sort questions by the number of views (descending)
         // .limit(limit) // Limit the number of results
         .limit(resPerPage)
@@ -545,7 +545,7 @@ export class QuestionsService {
     );
   }
   async getMostUpvotedQuestions(limit: number = 10): Promise<Question[]> {
-    return this.QuestionModel.find()
+    return this.QuestionModel.find({ status: 'Enable' })
       .sort({ upvotes: -1 }) // Sort by upvotes in descending order
       .limit(limit) // Limit the number of questions
       .populate('categoryId')
@@ -557,7 +557,7 @@ export class QuestionsService {
   }
 
   async getMostdownvotedQuestions(limit: number = 10): Promise<Question[]> {
-    return this.QuestionModel.find()
+    return this.QuestionModel.find({ status: 'Enable' })
       .sort({ downvotes: -1 }) // Sort questions by the number of downvote (descending)
       .limit(limit) // Limit the number of results
       .populate('categoryId')
@@ -571,7 +571,7 @@ export class QuestionsService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    return this.QuestionModel.find()
+    return this.QuestionModel.find({ status: 'Enable' })
       .sort({ downvotes: -1 }) // Sort by upvotes in descending order
       .limit(resPerPage)
       .skip(skip)
@@ -586,7 +586,7 @@ export class QuestionsService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    const books = await this.QuestionModel.find()
+    const books = await this.QuestionModel.find({ status: 'Enable' })
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
@@ -602,7 +602,7 @@ export class QuestionsService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    return this.QuestionModel.find()
+    return this.QuestionModel.find({ status: 'Enable' })
       .sort({ upvotes: -1 }) // Sort by upvotes in descending order
       .limit(resPerPage)
       .skip(skip)
@@ -620,7 +620,7 @@ export class QuestionsService {
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
     // Fetch all questions
-    const questions = await this.QuestionModel.find()
+    const questions = await this.QuestionModel.find({ status: 'Enable' })
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
@@ -668,7 +668,7 @@ export class QuestionsService {
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
     // Fetch all questions
-    const questions = await this.QuestionModel.find()
+    const questions = await this.QuestionModel.find({ status: 'Enable' })
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
@@ -728,7 +728,7 @@ export class QuestionsService {
       .exec();
   }
   async getQuestionsByUserId(userId: string): Promise<Question[]> {
-    const question = await this.QuestionModel.find({ userId })
+    const question = await this.QuestionModel.find({ userId, status: 'Enable' })
       .sort({ createdAt: -1 })
       .populate({
         path: 'userId',
@@ -747,13 +747,17 @@ export class QuestionsService {
     return question;
   }
   async getQuestionsCountByUserId(userId: string): Promise<number> {
-    return this.QuestionModel.countDocuments({ userId }).exec();
+    return this.QuestionModel.countDocuments({
+      userId,
+      status: 'Enable',
+    }).exec();
   }
   async getQuestionsandAnswerCountByUserId(
     userId: string,
   ): Promise<{ questionCount: number; answerCount: number }> {
     const questionCount = await this.QuestionModel.countDocuments({
       userId,
+      status: 'Enable',
     }).exec();
     const answerCount = await this.answerModel
       .countDocuments({ userId })

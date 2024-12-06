@@ -179,13 +179,13 @@ export class QuestionsController {
     return this.questionsService.downvoteQuestion(objectId, userObjectId);
   }
   @UseGuards(UserAuthGuard)
-  @Patch(':id/:adminId/status')
+  @Patch(':id/update/status')
   async changeQuestionStatus(
     @Param('id') questionId: string,
-    @Param('adminId') adminId: Types.ObjectId,
+    // @Param('adminId') adminId: Types.ObjectId,
     @Req() req,
   ) {
-    const userId = req.userId; // Assuming the user ID is stored in the request object after authentication
+    const adminId: Types.ObjectId = req.userId; // Assuming the user ID is stored in the request object after authentication
     return this.questionsService.changeQuestionStatus(questionId, adminId);
   }
   @Get(':id/stats')

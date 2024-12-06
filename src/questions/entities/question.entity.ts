@@ -13,7 +13,7 @@ export class Question extends Document {
   @Prop({ type: Types.ObjectId, ref: 'QuestionsCategory', required: true })
   categoryId: Types.ObjectId;
 
-  @Prop({ required: false, default: 'Enable' })
+  @Prop({ required: false, enum: ['Enable', 'Disable'], default: 'Enable' })
   status: string;
 
   @Prop({ required: false, default: 'UnAnswered' })
