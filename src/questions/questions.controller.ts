@@ -188,6 +188,16 @@ export class QuestionsController {
     const adminId: Types.ObjectId = req.userId; // Assuming the user ID is stored in the request object after authentication
     return this.questionsService.changeQuestionStatus(questionId, adminId);
   }
+  @UseGuards(UserAuthGuard)
+  @Patch(':id/update/status/enable')
+  async EnableQuestionStatus(
+    @Param('id') questionId: string,
+    // @Param('adminId') adminId: Types.ObjectId,
+    @Req() req,
+  ) {
+    const adminId: Types.ObjectId = req.userId; // Assuming the user ID is stored in the request object after authentication
+    return this.questionsService.EnableQuestionStatus(questionId, adminId);
+  }
   @Get(':id/stats')
   @UseGuards(UserAuthGuard)
   async viewQuestion(@Param('id') id: string, @Req() req) {

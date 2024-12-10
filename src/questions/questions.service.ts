@@ -394,7 +394,31 @@ export class QuestionsService {
       );
     }
   }
+  async EnableQuestionStatus(
+    questionId: string,
+    adminId: Types.ObjectId,
+  ): Promise<Question> {
+    const question = await this.QuestionModel.findById(questionId);
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+    const adminUser = await this.adminUserModel.findById(adminId);
+    // Check if the user is an admin
 
+    if (
+      adminUser
+      //  ||
+      // new Types.ObjectId(question.userId).equals(new Types.ObjectId(userId))
+    ) {
+      question.status = 'Enable';
+      // question.updatedAt = new Date();
+      return await question.save();
+    } else {
+      throw new ForbiddenException(
+        'You do not have permission to change the status of this answer',
+      );
+    }
+  }
   async viewQuestion(id: string, userId: string) {
     const question = await this.QuestionModel.findById(id);
     if (!question) {
