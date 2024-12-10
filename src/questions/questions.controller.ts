@@ -179,7 +179,7 @@ export class QuestionsController {
     return this.questionsService.downvoteQuestion(objectId, userObjectId);
   }
   @UseGuards(UserAuthGuard)
-  @Patch(':id/update/status')
+  @Patch(':id/update/statuss')
   async changeQuestionStatus(
     @Param('id') questionId: string,
     // @Param('adminId') adminId: Types.ObjectId,
@@ -188,6 +188,27 @@ export class QuestionsController {
     const adminId: Types.ObjectId = req.userId; // Assuming the user ID is stored in the request object after authentication
     return this.questionsService.changeQuestionStatus(questionId, adminId);
   }
+
+  @UseGuards(UserAuthGuard)
+  @Patch(':id/update/status')
+  async updateQuestionStatusEnableDisable(
+    @Param('id') questionId: string,
+    // @Body() { status }: { status: 'Enable' | 'Disable' },
+    @Req() req,
+  ) {
+    const user = req.userId;
+    const adminId: Types.ObjectId = user;
+
+    const adminAuthority = await this.questionsService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+    return await this.questionsService.changeQuestionStatusEnableDisable(
+      questionId,
+    );
+  }
+
   @UseGuards(UserAuthGuard)
   @Patch(':id/update/status/enable')
   async EnableQuestionStatus(

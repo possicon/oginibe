@@ -369,6 +369,31 @@ export class QuestionsService {
       );
     }
   }
+  async getAdminByUserId(userId: Types.ObjectId): Promise<AdminUser> {
+    const adminuser = await this.adminUserModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        isAdmin: true,
+      })
+      .exec();
+    if (!adminuser) {
+      throw new NotFoundException('Only admins can perform this action');
+    }
+    return adminuser;
+  }
+  async changeQuestionStatusEnableDisable(
+    questionId: string,
+  ): Promise<Question> {
+    const question = await this.QuestionModel.findById(questionId);
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+
+    question.status = question.status === 'Enable' ? 'Disable' : 'Enable';
+
+    return await question.save();
+  }
+
   async changeQuestionStatus(
     questionId: string,
     adminId: Types.ObjectId,
@@ -390,7 +415,7 @@ export class QuestionsService {
       return await question.save();
     } else {
       throw new ForbiddenException(
-        'You do not have permission to change the status of this answer',
+        'You do not have permission to change the status of this question',
       );
     }
   }
@@ -419,6 +444,7 @@ export class QuestionsService {
       );
     }
   }
+
   async viewQuestion(id: string, userId: string) {
     const question = await this.QuestionModel.findById(id);
     if (!question) {
@@ -433,6 +459,7 @@ export class QuestionsService {
 
     return question;
   }
+
   async getQuestionViews(id: string) {
     const question = await this.QuestionModel.findById(id);
     if (!question) {
