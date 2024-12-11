@@ -9,8 +9,11 @@ export class User extends Document {
   @Prop({ required: true })
   lastName: string;
 
-  // @Prop({ default: false })
-  // isAdmin: boolean;
+  @Prop({ default: false, required: false })
+  isDeleted: boolean;
+
+  @Prop({ default: false, required: false })
+  isSuspended: boolean;
 
   @Prop({ required: true, unique: true })
   email: string;
@@ -21,7 +24,7 @@ export class User extends Document {
   facebookId: String;
   @Prop()
   name: string;
-  @Prop({ required: false})
+  @Prop({ required: false })
   profilePics: string;
 }
 

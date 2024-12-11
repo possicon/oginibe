@@ -47,6 +47,15 @@ export class QuestionsService {
       imageUrl,
       tags,
     } = createQuestionDto;
+    const suspenedeUser = await this.userModel.findOne({ userId });
+    if (
+      suspenedeUser.isDeleted === true ||
+      suspenedeUser.isSuspended === true
+    ) {
+      throw new BadRequestException(
+        'This suspended user cannot ask a question',
+      );
+    }
     const nameExits = await this.QuestionModel.findOne({
       title,
       userId,
@@ -56,6 +65,7 @@ export class QuestionsService {
         'This particular question has been asked by this user ',
       );
     }
+
     // Ensure imageUrls is an array
 
     const modifyName = title.replace(/\s+/g, '-');
@@ -103,6 +113,15 @@ export class QuestionsService {
       sendAnswerEmail,
       tags,
     } = createQuestionDto;
+    const suspenedeUser = await this.userModel.findOne({ userId });
+    if (
+      suspenedeUser.isDeleted === true ||
+      suspenedeUser.isSuspended === true
+    ) {
+      throw new BadRequestException(
+        'This suspended user cannot ask a question',
+      );
+    }
     const nameExits = await this.QuestionModel.findOne({
       title,
       userId,
@@ -198,7 +217,110 @@ export class QuestionsService {
     }
     return question;
   }
+  async updateQuestion(
+    id: string,
 
+    updateQuestionDto: UpdateQuestionDto,
+  ): Promise<Question> {
+    const existingEvent = await this.QuestionModel.findById(id).exec();
+    if (!existingEvent) {
+      throw new NotFoundException('Question not found');
+    }
+
+    let imageUrls: string[] = existingEvent.imageUrl || []; // Start with existing image URLs
+
+    if (updateQuestionDto.imageUrl) {
+      try {
+        const uploadedImages = await Promise.all(
+          updateQuestionDto.imageUrl.map(async (image) => {
+            const uploadResponse = await this.imagekit.upload({
+              file: image,
+              fileName: `${updateQuestionDto.title}.jpg`,
+              folder: '/updatedPics',
+            });
+            return uploadResponse.url;
+          }),
+        );
+        imageUrls = [...imageUrls, ...uploadedImages]; // Append new images to existing URLs
+        updateQuestionDto.imageUrl = imageUrls;
+      } catch (error) {
+        console.error('Error uploading to ImageKit:', error);
+        throw new BadRequestException('Error uploading images');
+      }
+    }
+
+    const updateQuery: UpdateQuery<Question> = {
+      ...existingEvent.toObject(),
+      ...updateQuestionDto,
+      imageUrl: imageUrls,
+    };
+
+    const updatedQuestion = await this.QuestionModel.findByIdAndUpdate(
+      id,
+      updateQuery,
+      {
+        new: true,
+      },
+    ).exec();
+
+    if (!updatedQuestion) {
+      throw new NotFoundException('Question not found');
+    }
+
+    return updatedQuestion;
+  }
+  async updateQuestionByAdmin(
+    id: string,
+
+    updateQuestionDto: UpdateQuestionDto,
+  ): Promise<Question> {
+    const existingEvent = await this.QuestionModel.findById(id).exec();
+    if (!existingEvent) {
+      throw new NotFoundException('Question not found');
+    }
+
+    let imageUrls: string[] = existingEvent.imageUrl || []; // Start with existing image URLs
+
+    if (updateQuestionDto.imageUrl) {
+      try {
+        const uploadedImages = await Promise.all(
+          updateQuestionDto.imageUrl.map(async (image) => {
+            const uploadResponse = await this.imagekit.upload({
+              file: image,
+              fileName: `${updateQuestionDto.title}.jpg`,
+              folder: '/updatedPics',
+            });
+            return uploadResponse.url;
+          }),
+        );
+        imageUrls = [...imageUrls, ...uploadedImages]; // Append new images to existing URLs
+        updateQuestionDto.imageUrl = imageUrls;
+      } catch (error) {
+        console.error('Error uploading to ImageKit:', error);
+        throw new BadRequestException('Error uploading images');
+      }
+    }
+
+    const updateQuery: UpdateQuery<Question> = {
+      ...existingEvent.toObject(),
+      ...updateQuestionDto,
+      imageUrl: imageUrls,
+    };
+
+    const updatedQuestion = await this.QuestionModel.findByIdAndUpdate(
+      id,
+      updateQuery,
+      {
+        new: true,
+      },
+    ).exec();
+
+    if (!updatedQuestion) {
+      throw new NotFoundException('Question not found');
+    }
+
+    return updatedQuestion;
+  }
   async update(
     id: string,
     updateQuestionDto: UpdateQuestionDto,

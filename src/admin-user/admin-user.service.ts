@@ -361,4 +361,51 @@ export class AdminUserService {
       totalAdmins,
     };
   }
+
+  ////suspend a user
+  async SuspendaUser(userId: string): Promise<User> {
+    const userDetails = await this.UserModel.findById(userId);
+    if (!userDetails) {
+      throw new NotFoundException('User not found');
+    }
+    userDetails.isSuspended = userDetails.isSuspended === false ? true : false;
+
+    // question.updatedAt = new Date();
+    return await userDetails.save();
+  }
+
+  async softDeleteaUser(userId: string): Promise<User> {
+    const userDetails = await this.UserModel.findById(userId);
+    if (!userDetails) {
+      throw new NotFoundException('User not found');
+    }
+    userDetails.isDeleted = userDetails.isDeleted === false ? true : false;
+
+    // question.updatedAt = new Date();
+    return await userDetails.save();
+  }
+  async findAllNotSoftDeletedUser(): Promise<User[]> {
+    return this.UserModel.find({ isDeleted: false })
+      .sort({ createdAt: -1 })
+      .select('-password') // Exclude the password field
+      .exec();
+  }
+  async findAllNotSuspendedUser(): Promise<User[]> {
+    return this.UserModel.find({ isSuspended: false })
+      .sort({ createdAt: -1 })
+      .select('-password') // Exclude the password field
+      .exec();
+  }
+  async findAllSoftDeletedUser(): Promise<User[]> {
+    return this.UserModel.find({ isDeleted: true })
+      .sort({ createdAt: -1 })
+      .select('-password') // Exclude the password field
+      .exec();
+  }
+  async findAllSuspendedUser(): Promise<User[]> {
+    return this.UserModel.find({ isSuspended: true })
+      .sort({ createdAt: -1 })
+      .select('-password') // Exclude the password field
+      .exec();
+  }
 }

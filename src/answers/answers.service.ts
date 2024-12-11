@@ -5,8 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateAnswerDto } from './dto/create-answer.dto';
-import { UpdateAnswerDto } from './dto/update-answer.dto';
-import { FilterQuery, Model, Types } from 'mongoose';
+
+import { FilterQuery, Model, Types, UpdateQuery } from 'mongoose';
 import { Answer } from './entities/answer.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/auth/schemas/user.schema';
@@ -15,6 +15,7 @@ import { AdminUser } from 'src/admin-user/entities/admin-user.entity';
 import { AddCommentDto } from './dto/AddComment.dto';
 import { AnswerMailService } from './services/answerMail';
 import { AnswerMailServiceWithImg } from './services/answerWithImg.Mail';
+import { UpdateAnswerDto } from './dto/update-answer.dto';
 const ImageKit = require('imagekit');
 @Injectable()
 export class AnswersService {
@@ -41,6 +42,15 @@ export class AnswersService {
   }
   async create(createAnswerDto: CreateAnswerDto) {
     const { text, imageUrl, questionId, userId } = createAnswerDto;
+    const suspenedeUser = await this.userModel.findOne({ userId });
+    if (
+      suspenedeUser.isDeleted === true ||
+      suspenedeUser.isSuspended === true
+    ) {
+      throw new BadRequestException(
+        'This suspended user cannot ask a question',
+      );
+    }
     const nameExits = await this.answerModel.findOne({
       text,
       userId,
@@ -117,8 +127,59 @@ export class AnswersService {
     }
     return answer;
   }
+  async updateAnswer(
+    answerId: string,
 
-  async updateAnswer(answerId: string, updateDto: any): Promise<Answer> {
+    updateDto: any,
+  ): Promise<Answer> {
+    const existingEvent = await this.answerModel.findById(answerId).exec();
+    if (!existingEvent) {
+      throw new NotFoundException('Answer not found');
+    }
+
+    let imageUrls: string[] = existingEvent.imageUrl || []; // Start with existing image URLs
+
+    if (updateDto.imageUrl) {
+      try {
+        const uploadedImages = await Promise.all(
+          updateDto.imageUrl.map(async (image: any) => {
+            const uploadResponse = await this.imagekit.upload({
+              file: image,
+              fileName: `${updateDto.title}.jpg`,
+              folder: '/updatedPics',
+            });
+            return uploadResponse.url;
+          }),
+        );
+        imageUrls = [...imageUrls, ...uploadedImages]; // Append new images to existing URLs
+        updateDto.imageUrl = imageUrls;
+      } catch (error) {
+        console.error('Error uploading to ImageKit:', error);
+        throw new BadRequestException('Error uploading images');
+      }
+    }
+    const updateQuery: UpdateQuery<Answer> = {
+      ...existingEvent.toObject(),
+      ...updateDto,
+      imageUrl: imageUrls,
+    };
+
+    const updatedAnswer = await this.answerModel
+      .findByIdAndUpdate(answerId, updateQuery, {
+        new: true,
+      })
+      .exec();
+
+    if (!updatedAnswer) {
+      throw new NotFoundException('Answer not found');
+    }
+
+    return updatedAnswer;
+  }
+  async updateAnswerWithoutImagekit(
+    answerId: string,
+    updateDto: any,
+  ): Promise<Answer> {
     const updatedAnswer = await this.answerModel.findByIdAndUpdate(
       answerId,
       updateDto,

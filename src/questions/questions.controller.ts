@@ -76,12 +76,42 @@ export class QuestionsController {
   async getQuestionBySlug(@Param('slug') slug: string) {
     return await this.questionsService.getQuestionBySlug(slug);
   }
+  @UseGuards(UserAuthGuard)
   @Patch(':id')
+  updateQuestion(
+    @Param('id') id: string,
+    @Body() updateQuestionDto: UpdateQuestionDto,
+    @Req() req,
+  ) {
+    const userId = req.userId;
+    return this.questionsService.updateQuestion(id, updateQuestionDto);
+  }
+
+  @UseGuards(UserAuthGuard)
+  @Patch(':id/update/q')
   update(
     @Param('id') id: string,
     @Body() updateQuestionDto: UpdateQuestionDto,
   ) {
     return this.questionsService.update(id, updateQuestionDto);
+  }
+
+  @UseGuards(UserAuthGuard)
+  @Patch(':id/admin/update')
+  async updateByAdmin(
+    @Param('id') id: string,
+    @Req() req,
+    @Body() updateQuestionDto: UpdateQuestionDto,
+  ) {
+    const user = req.userId;
+    const adminId: Types.ObjectId = user;
+
+    const adminAuthority = await this.questionsService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+    return this.questionsService.updateQuestionByAdmin(id, updateQuestionDto);
   }
 
   @UseGuards(UserAuthGuard)

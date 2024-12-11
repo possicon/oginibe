@@ -26,6 +26,7 @@ import { AdminAuthGuard } from './AdminRolesAuthGuard/admin-authguard';
 import { AssignRoleDto } from './dto/asign-roles.dto';
 import { AdminGuards } from './AdminRolesAuthGuard/adminguard';
 import { LoginDto } from 'src/auth/dtos/login.dto';
+import { User } from 'src/auth/schemas/user.schema';
 
 @Controller('admin-user')
 export class AdminUserController {
@@ -245,5 +246,86 @@ export class AdminUserController {
       throw new ForbiddenException('Only admins can perform this action');
     }
     return this.adminUserService.countAll();
+  }
+  /////admin suspend user and soft delete user
+  @UseGuards(UserAuthGuard)
+  @Patch(':userId/update/softdelete')
+  async softDeleteaUser(
+    @Param('userId') userId: string,
+
+    @Req() req,
+  ) {
+    const user = req.userId;
+    const adminId: Types.ObjectId = user;
+
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+    return await this.adminUserService.softDeleteaUser(userId);
+  }
+
+  @UseGuards(UserAuthGuard)
+  @Patch(':userId/update/suspend')
+  async suspendUser(
+    @Param('userId') userId: string,
+
+    @Req() req,
+  ) {
+    const user = req.userId;
+    const adminId: Types.ObjectId = user;
+
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+    return await this.adminUserService.SuspendaUser(userId);
+  }
+
+  @UseGuards(UserAuthGuard)
+  @Get('user/all/softdeleted')
+  async findAllSoftDeletedUser(@Req() req): Promise<User[]> {
+    const user = req.userId;
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+    return this.adminUserService.findAllSoftDeletedUser();
+  }
+  @UseGuards(UserAuthGuard)
+  @Get('user/all/unsoftdeleted')
+  async findAllUnSoftDeletedUser(@Req() req): Promise<User[]> {
+    const user = req.userId;
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+    return this.adminUserService.findAllNotSoftDeletedUser();
+  }
+  @UseGuards(UserAuthGuard)
+  @Get('user/all/suspended')
+  async findAllSuspendedUserr(@Req() req): Promise<User[]> {
+    const user = req.userId;
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+    return this.adminUserService.findAllSuspendedUser();
+  }
+  @UseGuards(UserAuthGuard)
+  @Get('user/all/unsuspended')
+  async findAllUnSuspendedUserr(@Req() req): Promise<User[]> {
+    const user = req.userId;
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+    return this.adminUserService.findAllNotSuspendedUser();
   }
 }

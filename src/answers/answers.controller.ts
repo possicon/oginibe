@@ -43,10 +43,15 @@ export class AnswersController {
   async getAnswersByQuestionId(@Param('questionId') questionId: string) {
     return this.answersService.getAnswersByQuestionId(questionId);
   }
-
+  @UseGuards(UserAuthGuard)
   @Patch(':id')
-  async updateAnswer(@Param('id') id: string, @Body() updateDto) {
-    return this.answersService.updateAnswer(id, updateDto);
+  updateQuestion(
+    @Param('id') answerId: string,
+    @Body() updateDto: UpdateAnswerDto,
+    @Req() req,
+  ) {
+    const userId = req.userId;
+    return this.answersService.updateAnswer(answerId, updateDto);
   }
 
   @Delete(':id')
@@ -122,10 +127,10 @@ export class AnswersController {
     return this.answersService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAnswerDto: UpdateAnswerDto) {
-    return this.answersService.update(+id, updateAnswerDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateAnswerDto: UpdateAnswerDto) {
+  //   return this.answersService.update(+id, updateAnswerDto);
+  // }
 
   @UseGuards(UserAuthGuard)
   @Delete(':id')

@@ -19,7 +19,9 @@ export class SignupDto {
   @Transform(({ value }) => value.toLowerCase()) // Transform email to lowercase
   email: string;
 
-  // isAdmin: boolean;
+  isDeleted: boolean;
+
+  isSuspended: boolean;
 
   @IsOptional()
   name: string;
