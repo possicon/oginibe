@@ -640,7 +640,10 @@ export class QuestionsService {
   async findQuestionsByTag(tag: string): Promise<Question[]> {
     return this.QuestionModel.find({ tags: tag, status: 'Enable' }).exec();
   }
-  async getAllQuestionsWithPagination(page: number = 1, limit: number = 10) {
+  async getAllQuestionsWithPaginationnotmain(
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const skip = (page - 1) * limit;
 
     const [questions, totalCount] = await Promise.all([

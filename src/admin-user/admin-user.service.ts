@@ -20,6 +20,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { JwtService } from '@nestjs/jwt';
 import { Answer } from 'src/answers/entities/answer.entity';
 import { Question } from 'src/questions/entities/question.entity';
+import { Query } from 'express-serve-static-core';
 @Injectable()
 export class AdminUserService {
   constructor(
@@ -437,5 +438,18 @@ export class AdminUserService {
         select: '-password', // Exclude the password field
       })
       .exec();
+  }
+  ///
+  async getAllUsersWithPaginations(query: Query): Promise<User[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
+    const books = await this.UserModel.find()
+      .sort({ createdAt: -1 })
+      .limit(resPerPage)
+      .skip(skip)
+      .select('-password')
+      .exec();
+    return books;
   }
 }

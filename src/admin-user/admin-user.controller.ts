@@ -27,6 +27,7 @@ import { AssignRoleDto } from './dto/asign-roles.dto';
 import { AdminGuards } from './AdminRolesAuthGuard/adminguard';
 import { LoginDto } from 'src/auth/dtos/login.dto';
 import { User } from 'src/auth/schemas/user.schema';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 
 @Controller('admin-user')
 export class AdminUserController {
@@ -366,5 +367,20 @@ export class AdminUserController {
     }
 
     return this.adminUserService.AdminfindAllDisableQuestion();
+  }
+
+  @UseGuards(UserAuthGuard)
+  @Get('users/pag/all')
+  async getAllQuestionwithPag(
+    @Query() query: ExpressQuery,
+    @Req() req,
+  ): Promise<User[]> {
+    const user = req.userId;
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+    return this.adminUserService.getAllUsersWithPaginations(query);
   }
 }
