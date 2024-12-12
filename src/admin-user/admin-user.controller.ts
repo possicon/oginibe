@@ -328,4 +328,43 @@ export class AdminUserController {
     }
     return this.adminUserService.findAllNotSuspendedUser();
   }
+
+  @UseGuards(UserAuthGuard)
+  @Delete('questions/:id')
+  async AdminRemoveQuestion(@Param('id') id: string, @Req() req) {
+    const user = req.userId;
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+
+    await this.adminUserService.AdminRemoveQuestion(id);
+    return { message: 'Question deleted successfully' };
+  }
+
+  @UseGuards(UserAuthGuard)
+  @Get('questions/enable')
+  async AdminfindAllEnableQuestion(@Req() req) {
+    const user = req.userId;
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+
+    return this.adminUserService.AdminfindAllEnableQuestion();
+  }
+  @UseGuards(UserAuthGuard)
+  @Get('questions/disable')
+  async AdminfindAllDisableQuestion(@Req() req) {
+    const user = req.userId;
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+
+    return this.adminUserService.AdminfindAllDisableQuestion();
+  }
 }

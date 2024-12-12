@@ -385,13 +385,17 @@ export class AdminUserService {
     return await userDetails.save();
   }
   async findAllNotSoftDeletedUser(): Promise<User[]> {
-    return this.UserModel.find({ isDeleted: false })
+    return this.UserModel.find({
+      $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],
+    })
       .sort({ createdAt: -1 })
       .select('-password') // Exclude the password field
       .exec();
   }
   async findAllNotSuspendedUser(): Promise<User[]> {
-    return this.UserModel.find({ isSuspended: false })
+    return this.UserModel.find({
+      $or: [{ isSuspended: false }, { isSuspended: { $exists: false } }],
+    })
       .sort({ createdAt: -1 })
       .select('-password') // Exclude the password field
       .exec();
@@ -406,6 +410,32 @@ export class AdminUserService {
     return this.UserModel.find({ isSuspended: true })
       .sort({ createdAt: -1 })
       .select('-password') // Exclude the password field
+      .exec();
+  }
+  async AdminRemoveQuestion(id: string): Promise<void> {
+    const result = await this.QuestionModel.findByIdAndDelete(id);
+    if (!result) {
+      throw new NotFoundException('Questions not found');
+    }
+  }
+  async AdminfindAllEnableQuestion(): Promise<Question[]> {
+    return this.QuestionModel.find({ status: 'Enable' })
+      .sort({ createdAt: -1 })
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .exec();
+  }
+  async AdminfindAllDisableQuestion(): Promise<Question[]> {
+    return this.QuestionModel.find({ status: 'Disable' })
+      .sort({ createdAt: -1 })
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
       .exec();
   }
 }
