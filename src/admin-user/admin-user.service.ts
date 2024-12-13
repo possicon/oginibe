@@ -385,32 +385,52 @@ export class AdminUserService {
     // question.updatedAt = new Date();
     return await userDetails.save();
   }
-  async findAllNotSoftDeletedUser(): Promise<User[]> {
+  async findAllNotSoftDeletedUser(query: Query): Promise<User[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
     return this.UserModel.find({
       $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }],
     })
       .sort({ createdAt: -1 })
       .select('-password') // Exclude the password field
+      .limit(resPerPage)
+      .skip(skip)
       .exec();
   }
-  async findAllNotSuspendedUser(): Promise<User[]> {
+  async findAllNotSuspendedUser(query: Query): Promise<User[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
     return this.UserModel.find({
       $or: [{ isSuspended: false }, { isSuspended: { $exists: false } }],
     })
       .sort({ createdAt: -1 })
       .select('-password') // Exclude the password field
+      .limit(resPerPage)
+      .skip(skip)
       .exec();
   }
-  async findAllSoftDeletedUser(): Promise<User[]> {
+  async findAllSoftDeletedUser(query: Query): Promise<User[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
     return this.UserModel.find({ isDeleted: true })
       .sort({ createdAt: -1 })
       .select('-password') // Exclude the password field
+      .limit(resPerPage)
+      .skip(skip)
       .exec();
   }
-  async findAllSuspendedUser(): Promise<User[]> {
+  async findAllSuspendedUser(query: Query): Promise<User[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
     return this.UserModel.find({ isSuspended: true })
       .sort({ createdAt: -1 })
       .select('-password') // Exclude the password field
+      .limit(resPerPage)
+      .skip(skip)
       .exec();
   }
   async AdminRemoveQuestion(id: string): Promise<void> {
@@ -419,7 +439,10 @@ export class AdminUserService {
       throw new NotFoundException('Questions not found');
     }
   }
-  async AdminfindAllEnableQuestion(): Promise<Question[]> {
+  async AdminfindAllEnableQuestion(query: Query): Promise<Question[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
     return this.QuestionModel.find({ status: 'Enable' })
       .sort({ createdAt: -1 })
       .populate('categoryId')
@@ -427,12 +450,19 @@ export class AdminUserService {
         path: 'userId',
         select: '-password', // Exclude the password field
       })
+      .limit(resPerPage)
+      .skip(skip)
       .exec();
   }
-  async AdminfindAllDisableQuestion(): Promise<Question[]> {
+  async AdminfindAllDisableQuestion(query: Query): Promise<Question[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
     return this.QuestionModel.find({ status: 'Disable' })
       .sort({ createdAt: -1 })
       .populate('categoryId')
+      .limit(resPerPage)
+      .skip(skip)
       .populate({
         path: 'userId',
         select: '-password', // Exclude the password field

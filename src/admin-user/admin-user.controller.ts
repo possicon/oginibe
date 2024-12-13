@@ -287,47 +287,59 @@ export class AdminUserController {
 
   @UseGuards(UserAuthGuard)
   @Get('user/all/softdeleted')
-  async findAllSoftDeletedUser(@Req() req): Promise<User[]> {
+  async findAllSoftDeletedUser(
+    @Query() query: ExpressQuery,
+    @Req() req,
+  ): Promise<User[]> {
     const user = req.userId;
     const adminAuthority = await this.adminUserService.getAdminByUserId(user);
 
     if (adminAuthority.userId.toString() !== user) {
       throw new ForbiddenException('Only admins can perform this action');
     }
-    return this.adminUserService.findAllSoftDeletedUser();
+    return this.adminUserService.findAllSoftDeletedUser(query);
   }
   @UseGuards(UserAuthGuard)
   @Get('user/all/unsoftdeleted')
-  async findAllUnSoftDeletedUser(@Req() req): Promise<User[]> {
+  async findAllUnSoftDeletedUser(
+    @Query() query: ExpressQuery,
+    @Req() req,
+  ): Promise<User[]> {
     const user = req.userId;
     const adminAuthority = await this.adminUserService.getAdminByUserId(user);
 
     if (adminAuthority.userId.toString() !== user) {
       throw new ForbiddenException('Only admins can perform this action');
     }
-    return this.adminUserService.findAllNotSoftDeletedUser();
+    return this.adminUserService.findAllNotSoftDeletedUser(query);
   }
   @UseGuards(UserAuthGuard)
   @Get('user/all/suspended')
-  async findAllSuspendedUserr(@Req() req): Promise<User[]> {
+  async findAllSuspendedUserr(
+    @Query() query: ExpressQuery,
+    @Req() req,
+  ): Promise<User[]> {
     const user = req.userId;
     const adminAuthority = await this.adminUserService.getAdminByUserId(user);
 
     if (adminAuthority.userId.toString() !== user) {
       throw new ForbiddenException('Only admins can perform this action');
     }
-    return this.adminUserService.findAllSuspendedUser();
+    return this.adminUserService.findAllSuspendedUser(query);
   }
   @UseGuards(UserAuthGuard)
   @Get('user/all/unsuspended')
-  async findAllUnSuspendedUserr(@Req() req): Promise<User[]> {
+  async findAllUnSuspendedUserr(
+    @Query() query: ExpressQuery,
+    @Req() req,
+  ): Promise<User[]> {
     const user = req.userId;
     const adminAuthority = await this.adminUserService.getAdminByUserId(user);
 
     if (adminAuthority.userId.toString() !== user) {
       throw new ForbiddenException('Only admins can perform this action');
     }
-    return this.adminUserService.findAllNotSuspendedUser();
+    return this.adminUserService.findAllNotSuspendedUser(query);
   }
 
   @UseGuards(UserAuthGuard)
@@ -346,7 +358,7 @@ export class AdminUserController {
 
   @UseGuards(UserAuthGuard)
   @Get('questions/enable')
-  async AdminfindAllEnableQuestion(@Req() req) {
+  async AdminfindAllEnableQuestion(@Query() query: ExpressQuery, @Req() req) {
     const user = req.userId;
     const adminAuthority = await this.adminUserService.getAdminByUserId(user);
 
@@ -354,11 +366,11 @@ export class AdminUserController {
       throw new ForbiddenException('Only admins can perform this action');
     }
 
-    return this.adminUserService.AdminfindAllEnableQuestion();
+    return this.adminUserService.AdminfindAllEnableQuestion(query);
   }
   @UseGuards(UserAuthGuard)
   @Get('questions/disable')
-  async AdminfindAllDisableQuestion(@Req() req) {
+  async AdminfindAllDisableQuestion(@Query() query: ExpressQuery, @Req() req) {
     const user = req.userId;
     const adminAuthority = await this.adminUserService.getAdminByUserId(user);
 
@@ -366,7 +378,7 @@ export class AdminUserController {
       throw new ForbiddenException('Only admins can perform this action');
     }
 
-    return this.adminUserService.AdminfindAllDisableQuestion();
+    return this.adminUserService.AdminfindAllDisableQuestion(query);
   }
 
   @UseGuards(UserAuthGuard)
