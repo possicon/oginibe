@@ -640,36 +640,18 @@ export class QuestionsService {
   async findQuestionsByTag(tag: string): Promise<Question[]> {
     return this.QuestionModel.find({ tags: tag, status: 'Enable' }).exec();
   }
-  async getAllQuestionsWithPaginationnotmain(
-    page: number = 1,
-    limit: number = 10,
-  ) {
-    const skip = (page - 1) * limit;
 
-    const [questions, totalCount] = await Promise.all([
-      this.QuestionModel.find({ status: 'Enable' })
-        .populate('categoryId', 'name') // If you want to populate the category
-        .populate('userId', 'username') // If you want to populate the user info
-        .skip(skip)
-        .limit(limit)
-        .exec(),
-      this.QuestionModel.countDocuments().exec(),
-    ]);
-
-    return {
-      data: questions,
-      totalCount,
-      currentPage: page,
-      totalPages: Math.ceil(totalCount / limit),
-    };
-  }
   async getAllQuestionsWithPaginations(
     page: number = 1,
     pageSize: number = 10,
   ) {
-    const count = await this.QuestionModel.countDocuments();
+    const count = await this.QuestionModel.countDocuments({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    });
 
-    const products = await this.QuestionModel.find({ status: 'Enable' })
+    const products = await this.QuestionModel.find({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    })
       .sort({ createdAt: -1 })
       .limit(pageSize)
       .skip(pageSize * (page - 1))
@@ -681,11 +663,14 @@ export class QuestionsService {
       .exec();
     return { products, page, pages: Math.ceil(count / pageSize) };
   }
+
   async getNewestQuestions(query: Query): Promise<Question[]> {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    return this.QuestionModel.find({ status: 'Enable' })
+    return this.QuestionModel.find({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    })
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
@@ -707,22 +692,24 @@ export class QuestionsService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    return (
-      this.QuestionModel.find({ status: 'Enable' })
-        .sort({ views: -1 }) // Sort questions by the number of views (descending)
-        // .limit(limit) // Limit the number of results
-        .limit(resPerPage)
-        .skip(skip)
-        .populate('categoryId')
-        .populate({
-          path: 'userId',
-          select: '-password', // Exclude the password field
-        })
-        .exec()
-    );
+    return this.QuestionModel.find({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    })
+      .sort({ views: -1 }) // Sort questions by the number of views (descending)
+
+      .limit(resPerPage)
+      .skip(skip)
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .exec();
   }
   async getMostUpvotedQuestions(limit: number = 10): Promise<Question[]> {
-    return this.QuestionModel.find({ status: 'Enable' })
+    return this.QuestionModel.find({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    })
       .sort({ upvotes: -1 }) // Sort by upvotes in descending order
       .limit(limit) // Limit the number of questions
       .populate('categoryId')
@@ -734,7 +721,9 @@ export class QuestionsService {
   }
 
   async getMostdownvotedQuestions(limit: number = 10): Promise<Question[]> {
-    return this.QuestionModel.find({ status: 'Enable' })
+    return this.QuestionModel.find({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    })
       .sort({ downvotes: -1 }) // Sort questions by the number of downvote (descending)
       .limit(limit) // Limit the number of results
       .populate('categoryId')
@@ -748,7 +737,9 @@ export class QuestionsService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    return this.QuestionModel.find({ status: 'Enable' })
+    return this.QuestionModel.find({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    })
       .sort({ downvotes: -1 }) // Sort by upvotes in descending order
       .limit(resPerPage)
       .skip(skip)
@@ -763,7 +754,9 @@ export class QuestionsService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    const books = await this.QuestionModel.find({ status: 'Enable' })
+    const books = await this.QuestionModel.find({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    })
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
@@ -779,7 +772,9 @@ export class QuestionsService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    return this.QuestionModel.find({ status: 'Enable' })
+    return this.QuestionModel.find({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    })
       .sort({ upvotes: -1 }) // Sort by upvotes in descending order
       .limit(resPerPage)
       .skip(skip)
@@ -797,7 +792,9 @@ export class QuestionsService {
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
     // Fetch all questions
-    const questions = await this.QuestionModel.find({ status: 'Enable' })
+    const questions = await this.QuestionModel.find({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    })
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
@@ -845,7 +842,9 @@ export class QuestionsService {
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
     // Fetch all questions
-    const questions = await this.QuestionModel.find({ status: 'Enable' })
+    const questions = await this.QuestionModel.find({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    })
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
