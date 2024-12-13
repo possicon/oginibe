@@ -668,9 +668,12 @@ export class QuestionsService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    return this.QuestionModel.find({
-      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
-    })
+    return this.QuestionModel
+      .find
+      //   {
+      //   $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+      // }
+      ()
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
@@ -754,9 +757,7 @@ export class QuestionsService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    const books = await this.QuestionModel.find({
-      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
-    })
+    const books = await this.QuestionModel.find()
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
