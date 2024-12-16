@@ -287,6 +287,16 @@ export class QuestionsController {
       );
     return paginatedQuestions;
   }
+  @Get('/enable/all')
+  async findAllEnableQuestionwithPag(
+    @Query() query: ExpressQuery,
+  ): Promise<Question[]> {
+    return this.questionsService.findAllEnableQuestionwithPag(query);
+  }
+  @Get('/enable/all/count')
+  async totalEnableQuestionCount() {
+    return this.questionsService.totalEnableQuestionCount();
+  }
   @Get('/newest/all')
   async getNewestQuestions(@Query() query: ExpressQuery): Promise<Question[]> {
     return this.questionsService.getNewestQuestions(query);

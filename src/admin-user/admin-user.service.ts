@@ -443,7 +443,7 @@ export class AdminUserService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    return this.QuestionModel.find({ status: 'Enable' })
+    const books = this.QuestionModel.find({ status: 'Enable' })
       .sort({ createdAt: -1 })
       .populate('categoryId')
       .populate({
@@ -453,6 +453,7 @@ export class AdminUserService {
       .limit(resPerPage)
       .skip(skip)
       .exec();
+    return books;
   }
   async AdminfindAllDisableQuestion(query: Query): Promise<Question[]> {
     const resPerPage = 10;

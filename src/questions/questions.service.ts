@@ -640,7 +640,21 @@ export class QuestionsService {
   async findQuestionsByTag(tag: string): Promise<Question[]> {
     return this.QuestionModel.find({ tags: tag, status: 'Enable' }).exec();
   }
-
+  async findAllEnableQuestionwithPag(query: Query): Promise<Question[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
+    return this.QuestionModel.find({ status: 'Enable' })
+      .sort({ createdAt: -1 })
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .limit(resPerPage)
+      .skip(skip)
+      .exec();
+  }
   async getAllQuestionsWithPaginations(
     page: number = 1,
     pageSize: number = 10,
@@ -668,12 +682,9 @@ export class QuestionsService {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
     const skip = resPerPage * (currentPage - 1);
-    return this.QuestionModel
-      .find
-      //   {
-      //   $or: [{ status: 'Enable' }, { status: { $exists: false } }],
-      // }
-      ()
+    return this.QuestionModel.find({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    })
       .sort({ createdAt: -1 })
       .limit(resPerPage)
       .skip(skip)
@@ -753,6 +764,15 @@ export class QuestionsService {
       })
       .exec(); // Execute the query
   }
+
+  async totalEnableQuestionCount() {
+    const totalRecords = await this.QuestionModel.countDocuments({
+      $or: [{ status: 'Enable' }, { status: { $exists: false } }],
+    });
+    console.log('Total Records:', totalRecords);
+    return totalRecords;
+  }
+
   async findAllQuestionwithPagination(query: Query): Promise<Question[]> {
     const resPerPage = 10;
     const currentPage = Number(query.page) || 1;
