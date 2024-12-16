@@ -31,6 +31,7 @@ export class SignupDto {
 
   @IsOptional()
   facebookId: string;
+
   @IsString()
   @MinLength(6)
   @Matches(/^(?=.*[0-9])/, {

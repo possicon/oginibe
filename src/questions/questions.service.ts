@@ -772,6 +772,31 @@ export class QuestionsService {
     console.log('Total Records:', totalRecords);
     return totalRecords;
   }
+  async findAllQuestionWithPaginationMetadata(query: Query): Promise<any> {
+    const resPerPage = 10;
+    const currentPage = Math.max(Number(query.page) || 1, 1); // Ensure page is at least 1
+    const skip = resPerPage * (currentPage - 1);
+
+    const totalQuestions = await this.QuestionModel.countDocuments();
+    const questions = await this.QuestionModel.find()
+      .sort({ createdAt: -1 })
+      .limit(resPerPage)
+      .skip(skip)
+      .populate('categoryId')
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .exec();
+
+    return {
+      totalQuestions,
+      currentPage,
+      resPerPage,
+      totalPages: Math.ceil(totalQuestions / resPerPage),
+      questions,
+    };
+  }
 
   async findAllQuestionwithPagination(query: Query): Promise<Question[]> {
     const resPerPage = 10;

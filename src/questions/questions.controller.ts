@@ -16,6 +16,7 @@ import {
   ForbiddenException,
   HttpCode,
   HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
@@ -301,7 +302,32 @@ export class QuestionsController {
   async getNewestQuestions(@Query() query: ExpressQuery): Promise<Question[]> {
     return this.questionsService.getNewestQuestions(query);
   }
+  @Get('/get/all')
+  async findAllQuestionsWithPaginationMetadata(
+    @Query() query: { page?: string },
+  ) {
+    try {
+      const result =
+        await this.questionsService.findAllQuestionWithPaginationMetadata(
+          query,
+        );
 
+      return {
+        success: true,
+        message: 'Questions retrieved successfully',
+        data: result,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Failed to retrieve questions',
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
   @Get('/popular/all')
   async getPopularQuestions(
     @Query() query: ExpressQuery,
