@@ -28,6 +28,8 @@ import { AdminGuards } from './AdminRolesAuthGuard/adminguard';
 import { LoginDto } from 'src/auth/dtos/login.dto';
 import { User } from 'src/auth/schemas/user.schema';
 import { Query as ExpressQuery } from 'express-serve-static-core';
+import { Question } from 'src/questions/entities/question.entity';
+import { Answer } from 'src/answers/entities/answer.entity';
 
 @Controller('admin-user')
 export class AdminUserController {
@@ -383,7 +385,7 @@ export class AdminUserController {
 
   @UseGuards(UserAuthGuard)
   @Get('users/pag/all')
-  async getAllQuestionwithPag(
+  async getAllUsersWithPaginations(
     @Query() query: ExpressQuery,
     @Req() req,
   ): Promise<User[]> {
@@ -394,5 +396,39 @@ export class AdminUserController {
       throw new ForbiddenException('Only admins can perform this action');
     }
     return this.adminUserService.getAllUsersWithPaginations(query);
+  }
+  ///
+  @UseGuards(UserAuthGuard)
+  @Get('questions/pag/all')
+  async getAllQuestionwithPag(
+    @Query() query: ExpressQuery,
+    @Req() req,
+  ): Promise<Question[]> {
+    const user = req.userId;
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+    return this.adminUserService.findAllQuestionwithPagination(query);
+  }
+  /////
+  @UseGuards(UserAuthGuard)
+  @Get('question/:questionId/pag/all')
+  async getAnswersByQuestionIdWithPagination(
+    @Param('questionId') questionId: string,
+    @Query() query: ExpressQuery,
+    @Req() req,
+  ): Promise<Answer[]> {
+    const user = req.userId;
+    const adminAuthority = await this.adminUserService.getAdminByUserId(user);
+
+    if (adminAuthority.userId.toString() !== user) {
+      throw new ForbiddenException('Only admins can perform this action');
+    }
+    return this.adminUserService.getAnswersByQuestionIdWithPagination(
+      questionId,
+      query,
+    );
   }
 }

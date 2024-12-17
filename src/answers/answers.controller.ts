@@ -13,6 +13,7 @@ import {
   Req,
   ForbiddenException,
 } from '@nestjs/common';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 import { AnswersService } from './answers.service';
 import { CreateAnswerDto } from './dto/create-answer.dto';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
@@ -42,6 +43,16 @@ export class AnswersController {
   @Get('question/:questionId')
   async getAnswersByQuestionId(@Param('questionId') questionId: string) {
     return this.answersService.getAnswersByQuestionId(questionId);
+  }
+  @Get('question/:questionId/pag/all')
+  async getAnswersByQuestionIdWithPagination(
+    @Param('questionId') questionId: string,
+    @Query() query: ExpressQuery,
+  ): Promise<Answer[]> {
+    return this.answersService.getAnswersByQuestionIdWithPagination(
+      questionId,
+      query,
+    );
   }
   @UseGuards(UserAuthGuard)
   @Patch(':id')

@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateAnswerDto } from './dto/create-answer.dto';
-
+import { Query } from 'express-serve-static-core';
 import { FilterQuery, Model, Types, UpdateQuery } from 'mongoose';
 import { Answer } from './entities/answer.entity';
 import { InjectModel } from '@nestjs/mongoose';
@@ -94,6 +94,44 @@ export class AnswersService {
       userId: result.userId,
     };
   }
+  async getAnswersByQuestionIdWithPagination(
+    questionId: string,
+    query: Query,
+  ): Promise<Answer[]> {
+    const resPerPage = 10;
+    const currentPage = Number(query.page) || 1;
+    const skip = resPerPage * (currentPage - 1);
+    const books = await this.answerModel
+      .find({ questionId })
+      .sort({ createdAt: -1 })
+      .limit(resPerPage)
+      .skip(skip)
+      .populate({
+        path: 'questionId',
+        populate: [
+          { path: 'categoryId' },
+          { path: 'userId', select: '-password' },
+        ],
+      })
+      .populate({
+        path: 'userId',
+        select: '-password', // Exclude the password field
+      })
+      .populate({
+        path: 'upvotes',
+        populate: [, { path: 'userId', select: '-password' }],
+      })
+      .populate('downvotes', 'firstName lastName email')
+      .populate({
+        path: 'comments', // Populate the userId inside the upvotes array
+        populate: {
+          path: 'userId', // Populate the 'userId' field within each comment
+          select: 'firstName lastName email', // Only retrieve the selected fields
+        },
+      })
+      .exec();
+    return books;
+  }
   async getAnswersByQuestionId(questionId: string): Promise<Answer[]> {
     const answer = await this.answerModel
       .find({ questionId })
@@ -123,7 +161,7 @@ export class AnswersService {
       })
       .exec();
     if (!answer) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Question not found, so there is no Answer');
     }
     return answer;
   }
