@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -29,6 +30,9 @@ export class CreateQuestionDto {
 
   imageUrls: string[];
   @IsOptional()
+  @IsEnum(['Enable', 'Disable'], {
+    message: 'Status must be either Enable or Disable',
+  })
   status?: string;
 
   @IsOptional()

@@ -414,7 +414,7 @@ export class AdminUserController {
   }
   /////
   @UseGuards(UserAuthGuard)
-  @Get('question/:questionId/pag/all')
+  @Get('answers/question/:questionId/pag/all')
   async getAnswersByQuestionIdWithPagination(
     @Param('questionId') questionId: string,
     @Query() query: ExpressQuery,
