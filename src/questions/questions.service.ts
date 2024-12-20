@@ -47,15 +47,18 @@ export class QuestionsService {
       imageUrl,
       tags,
     } = createQuestionDto;
-    const suspenedeUser = await this.userModel.findOne({ userId });
-    if (
-      suspenedeUser.isDeleted === true ||
-      suspenedeUser.isSuspended === true
-    ) {
+    const suspenedeUser = await this.userModel.findById(userId);
+    if (!suspenedeUser) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (suspenedeUser.isDeleted || suspenedeUser.isSuspended) {
       throw new BadRequestException(
         'This suspended user cannot ask a question',
       );
     }
+
+    console.log(suspenedeUser);
     const nameExits = await this.QuestionModel.findOne({
       title,
       userId,
@@ -113,11 +116,12 @@ export class QuestionsService {
       sendAnswerEmail,
       tags,
     } = createQuestionDto;
-    const suspenedeUser = await this.userModel.findOne({ userId });
-    if (
-      suspenedeUser.isDeleted === true ||
-      suspenedeUser.isSuspended === true
-    ) {
+    const suspenedeUser = await this.userModel.findById(userId);
+    if (!suspenedeUser) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (suspenedeUser.isDeleted || suspenedeUser.isSuspended) {
       throw new BadRequestException(
         'This suspended user cannot ask a question',
       );
@@ -563,7 +567,7 @@ export class QuestionsService {
       return await question.save();
     } else {
       throw new ForbiddenException(
-        'You do not have permission to change the status of this answer',
+        'You do not have permission to change the status of this question',
       );
     }
   }
